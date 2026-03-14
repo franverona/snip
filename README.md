@@ -1,6 +1,6 @@
 # snip
 
-A self-hosted URL shortener with click analytics.
+A self-hosted URL shortener that turns long, unwieldy links into clean, shareable slugs and tracks how they perform over time.
 
 ## Stack
 
