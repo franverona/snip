@@ -1,0 +1,34 @@
+# Dependencies
+node_modules
+
+# Build outputs
+dist
+.next
+!.next/types/**/*.d.ts
+
+# Turbo
+.turbo
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Database migration snapshots kept, but not the generated SQL if preferred
+# drizzle/*.sql  ← uncomment to ignore generated migrations
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode
+.idea
+*.swp
+*.swo
+
+# pnpm
+pnpm-debug.log
+
+# TypeScript
+*.tsbuildinfo
