@@ -1,16 +1,21 @@
 import { z } from 'zod'
 
+const urlSchema = z.url({
+  protocol: /^https?$/,
+  hostname: z.regexes.domain,
+})
+
 // ---- Input schemas ----
 
 export const CreateUrlInputSchema = z.object({
-  originalUrl: z.string().url('Must be a valid URL'),
+  originalUrl: urlSchema,
   customSlug: z
     .string()
     .min(3, 'Slug must be at least 3 characters')
     .max(50, 'Slug must be at most 50 characters')
     .regex(/^[a-zA-Z0-9_-]+$/, 'Slug can only contain letters, numbers, hyphens, and underscores')
     .optional(),
-  expiresAt: z.string().datetime().optional(),
+  expiresAt: z.iso.datetime().optional(),
 })
 
 export const SlugParamSchema = z.object({
@@ -20,28 +25,28 @@ export const SlugParamSchema = z.object({
 // ---- Response schemas ----
 
 export const UrlRecordSchema = z.object({
-  id: z.string().uuid(),
+  id: z.uuid(),
   slug: z.string(),
-  originalUrl: z.string().url(),
+  originalUrl: urlSchema,
   customSlug: z.boolean(),
-  expiresAt: z.string().datetime().nullable(),
-  createdAt: z.string().datetime(),
+  expiresAt: z.iso.datetime().nullable(),
+  createdAt: z.iso.datetime(),
 })
 
 export const CreateUrlResponseSchema = z.object({
-  id: z.string().uuid(),
+  id: z.uuid(),
   slug: z.string(),
-  originalUrl: z.string().url(),
+  originalUrl: urlSchema,
   customSlug: z.boolean(),
-  expiresAt: z.string().datetime().nullable(),
-  createdAt: z.string().datetime(),
-  shortUrl: z.string().url(),
+  expiresAt: z.iso.datetime().nullable(),
+  createdAt: z.iso.datetime(),
+  shortUrl: urlSchema,
 })
 
 export const ClickRecordSchema = z.object({
-  id: z.string().uuid(),
-  urlId: z.string().uuid(),
-  clickedAt: z.string().datetime(),
+  id: z.uuid(),
+  urlId: z.uuid(),
+  clickedAt: z.iso.datetime(),
   ipHash: z.string().nullable(),
   userAgent: z.string().nullable(),
   referer: z.string().nullable(),
@@ -63,5 +68,5 @@ export const ErrorResponseSchema = z.object({
 export const HealthResponseSchema = z.object({
   status: z.enum(['ok', 'error']),
   db: z.enum(['ok', 'error']),
-  timestamp: z.string().datetime(),
+  timestamp: z.iso.datetime(),
 })
