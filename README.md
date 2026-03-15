@@ -59,6 +59,7 @@ DATABASE_URL=postgresql://snip:snip@localhost:5432/snip
 PORT=3001
 BASE_URL=http://localhost:3001
 RATE_LIMIT_CREATE_PER_MINUTE=10
+CORS_ORIGIN=http://localhost:3000
 ```
 
 `apps/web/.env.local`:

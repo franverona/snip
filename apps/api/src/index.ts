@@ -12,7 +12,9 @@ await fastify.register(import('@fastify/rate-limit'), {
   timeWindow: '1 minute',
 })
 
-await fastify.register(cors, { origin: true })
+await fastify.register(cors, {
+  origin: env.CORS_ORIGIN ?? env.BASE_URL,
+})
 
 await fastify.register(healthRoutes)
 await fastify.register(urlRoutes)

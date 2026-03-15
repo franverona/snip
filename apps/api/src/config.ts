@@ -13,4 +13,5 @@ export const env = {
   PORT: parseInt(process.env['PORT'] ?? '3001', 10),
   BASE_URL: process.env['BASE_URL'] ?? 'http://localhost:3001',
   RATE_LIMIT_CREATE_PER_MINUTE: parseInt(process.env['RATE_LIMIT_CREATE_PER_MINUTE'] ?? '10', 10),
+  CORS_ORIGIN: process.env['CORS_ORIGIN'],
 }

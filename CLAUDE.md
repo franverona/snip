@@ -23,6 +23,7 @@ Guidelines for Claude Code when working in this repository.
 - Click recording is fire-and-forget (`setImmediate`) — never block the redirect response on it.
 - The redirect route (`/:slug`) must remain registered last in `apps/api/src/index.ts` to avoid shadowing other routes.
 - Rate limiting uses `@fastify/rate-limit` with a global fallback registered in `index.ts`. Only `POST /urls` has a per-route override driven by `RATE_LIMIT_CREATE_PER_MINUTE` (default: 10 req/min). Other routes inherit the global limit. Do not add more env vars for per-route limits without good reason.
+- CORS is restricted to a single origin via `@fastify/cors`. The allowed origin is `CORS_ORIGIN` if set, falling back to `BASE_URL`. In production, `CORS_ORIGIN` must be set to the web app's origin (e.g. `https://snip.example.com`) — `BASE_URL` is the API's own URL and is not a safe CORS fallback in production.
 
 ## Database
 
