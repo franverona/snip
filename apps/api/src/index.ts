@@ -21,6 +21,19 @@ await fastify.register(urlRoutes)
 // Redirect must be last (wildcard /:slug)
 await fastify.register(redirectRoutes)
 
+const shutdown = async () => {
+  try {
+    await fastify.close()
+    process.exit(0)
+  } catch (err) {
+    fastify.log.error(err)
+    process.exit(1)
+  }
+}
+
+process.on('SIGTERM', shutdown)
+process.on('SIGINT', shutdown)
+
 try {
   await fastify.listen({ port: env.PORT, host: '0.0.0.0' })
   console.log(`API running on port ${env.PORT}`)
