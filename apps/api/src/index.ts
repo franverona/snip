@@ -6,6 +6,11 @@ import { urlRoutes } from './routes/urls.js'
 import { redirectRoutes } from './routes/redirect.js'
 
 const fastify = Fastify({ logger: true })
+await fastify.register(import('@fastify/rate-limit'), {
+  global: true,
+  max: 120,
+  timeWindow: '1 minute',
+})
 
 await fastify.register(cors, { origin: true })
 
