@@ -14,14 +14,15 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@snip/types": "workspace:*",
-    "fastify": "^5.2.1",
     "@fastify/cors": "^10.0.2",
+    "@snip/types": "workspace:*",
+    "dotenv": "^16.4.7",
     "drizzle-orm": "^0.45.1",
+    "fastify": "^5.2.1",
+    "ipaddr.js": "^2.3.0",
     "nanoid": "^5.0.9",
     "pg": "^8.13.3",
-    "zod": "^4.3.6",
-    "dotenv": "^16.4.7"
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@snip/tsconfig": "workspace:*",
