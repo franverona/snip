@@ -5,34 +5,44 @@ import { env } from '../config.js'
 
 export async function urlRoutes(fastify: FastifyInstance) {
   // POST /urls — create short URL
-  fastify.post('/urls', async (request, reply) => {
-    const parsed = CreateUrlInputSchema.safeParse(request.body)
-    if (!parsed.success) {
-      return reply.status(400).send({
-        error: 'Validation error',
-        message: parsed.error.issues.map((i) => i.message).join(', '),
-      })
-    }
-
-    try {
-      const result = await createUrl(parsed.data, env.BASE_URL)
-      return reply.status(201).send(result)
-    } catch (err) {
-      if (err instanceof Error) {
-        switch (err.message) {
-          case 'SLUG_TAKEN':
-            return reply.status(409).send({ error: 'Slug already taken' })
-          case 'UNRESOLVED_DNS':
-            return reply.status(422).send({ error: 'URL hostname could not be resolved' })
-          case 'PRIVATE_ADDRESS':
-            return reply
-              .status(400)
-              .send({ error: 'URL resolves to a private or reserved address' })
-        }
+  fastify.post(
+    '/urls',
+    {
+      config: {
+        rateLimit: {
+          max: env.RATE_LIMIT_CREATE_PER_MINUTE,
+        },
+      },
+    },
+    async (request, reply) => {
+      const parsed = CreateUrlInputSchema.safeParse(request.body)
+      if (!parsed.success) {
+        return reply.status(400).send({
+          error: 'Validation error',
+          message: parsed.error.issues.map((i) => i.message).join(', '),
+        })
       }
-      throw err
-    }
-  })
+
+      try {
+        const result = await createUrl(parsed.data, env.BASE_URL)
+        return reply.status(201).send(result)
+      } catch (err) {
+        if (err instanceof Error) {
+          switch (err.message) {
+            case 'SLUG_TAKEN':
+              return reply.status(409).send({ error: 'Slug already taken' })
+            case 'UNRESOLVED_DNS':
+              return reply.status(422).send({ error: 'URL hostname could not be resolved' })
+            case 'PRIVATE_ADDRESS':
+              return reply
+                .status(400)
+                .send({ error: 'URL resolves to a private or reserved address' })
+          }
+        }
+        throw err
+      }
+    },
+  )
 
   // GET /urls/:slug/stats
   fastify.get<{ Params: { slug: string } }>('/urls/:slug/stats', async (request, reply) => {

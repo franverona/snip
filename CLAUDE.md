@@ -22,6 +22,7 @@ Guidelines for Claude Code when working in this repository.
 - Route handlers validate request bodies with Zod schemas imported from `@snip/types`.
 - Click recording is fire-and-forget (`setImmediate`) — never block the redirect response on it.
 - The redirect route (`/:slug`) must remain registered last in `apps/api/src/index.ts` to avoid shadowing other routes.
+- Rate limiting uses `@fastify/rate-limit` with a global fallback registered in `index.ts`. Only `POST /urls` has a per-route override driven by `RATE_LIMIT_CREATE_PER_MINUTE` (default: 10 req/min). Other routes inherit the global limit. Do not add more env vars for per-route limits without good reason.
 
 ## Database
 
