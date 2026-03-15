@@ -3,7 +3,12 @@ import { Pool } from 'pg'
 import { env } from '../config.js'
 import * as schema from './schema.js'
 
-const pool = new Pool({ connectionString: env.DATABASE_URL })
+const pool = new Pool({
+  connectionString: env.DATABASE_URL,
+  max: env.DATABASE_POOL_MAX,
+  idleTimeoutMillis: 30_000,
+  connectionTimeoutMillis: 5_000,
+})
 
 export const db = drizzle(pool, { schema })
 

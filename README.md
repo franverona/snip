@@ -56,6 +56,7 @@ cp apps/web/.env.example apps/web/.env.local
 
 ```
 DATABASE_URL=postgresql://snip:snip@localhost:5432/snip
+DATABASE_POOL_MAX=10
 PORT=3001
 BASE_URL=http://localhost:3001
 RATE_LIMIT_CREATE_PER_MINUTE=10
