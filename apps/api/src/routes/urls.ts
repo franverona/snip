@@ -18,8 +18,17 @@ export async function urlRoutes(fastify: FastifyInstance) {
       const result = await createUrl(parsed.data, env.BASE_URL)
       return reply.status(201).send(result)
     } catch (err) {
-      if (err instanceof Error && err.message === 'SLUG_TAKEN') {
-        return reply.status(409).send({ error: 'Slug already taken' })
+      if (err instanceof Error) {
+        switch (err.message) {
+          case 'SLUG_TAKEN':
+            return reply.status(409).send({ error: 'Slug already taken' })
+          case 'UNRESOLVED_DNS':
+            return reply.status(422).send({ error: 'URL hostname could not be resolved' })
+          case 'PRIVATE_ADDRESS':
+            return reply
+              .status(400)
+              .send({ error: 'URL resolves to a private or reserved address' })
+        }
       }
       throw err
     }
