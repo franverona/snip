@@ -29,7 +29,12 @@ function toClickRecord(click: Click): ClickRecord {
 }
 
 export async function createUrl(input: CreateUrlInput, baseUrl: string) {
-  const hostname = new URL(input.originalUrl).hostname
+  const baseHost = new URL(baseUrl).host
+  const { host, hostname } = new URL(input.originalUrl)
+  if (host === baseHost) {
+    throw new Error('REDIRECT_LOOP')
+  }
+
   let addresses: string[]
   try {
     addresses = await dns.resolve4(hostname)

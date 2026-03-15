@@ -29,6 +29,10 @@ export async function urlRoutes(fastify: FastifyInstance) {
       } catch (err) {
         if (err instanceof Error) {
           switch (err.message) {
+            case 'REDIRECT_LOOP':
+              return reply
+                .status(400)
+                .send({ error: 'Cannot shorten a URL pointing to this service' })
             case 'SLUG_TAKEN':
               return reply.status(409).send({ error: 'Slug already taken' })
             case 'UNRESOLVED_DNS':
