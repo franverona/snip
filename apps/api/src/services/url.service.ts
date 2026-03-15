@@ -1,5 +1,5 @@
 import ipaddr from 'ipaddr.js'
-import { eq, count, and, gte } from 'drizzle-orm'
+import { eq, count, and, gte, sql } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 import { db } from '../db/client.js'
 import { urls, clicks, type Url, type Click } from '../db/schema.js'
@@ -119,6 +119,7 @@ export async function getUrlStats(slug: string): Promise<UrlStats | null> {
   const now = new Date()
   const ago24h = new Date(now.getTime() - 24 * 60 * 60 * 1000)
   const ago7d = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+  const ago30d = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
 
   const [totalResult] = await db
     .select({ value: count() })
@@ -141,9 +142,20 @@ export async function getUrlStats(slug: string): Promise<UrlStats | null> {
     limit: 10,
   })
 
+  const clicksByDay = await db
+    .select({
+      date: sql<string>`date_trunc('day', ${clicks.clickedAt})::date::text`,
+      count: count(),
+    })
+    .from(clicks)
+    .where(and(eq(clicks.urlId, url.id), gte(clicks.clickedAt, ago30d)))
+    .groupBy(sql`date_trunc('day', ${clicks.clickedAt})`)
+    .orderBy(sql`date_trunc('day', ${clicks.clickedAt})`)
+
   return {
     url: toUrlRecord(url),
     totalClicks: Number(totalResult?.value ?? 0),
+    clicksByDay: clicksByDay.map((r) => ({ date: r.date, count: Number(r.count) })),
     clicksLast24h: Number(last24hResult?.value ?? 0),
     clicksLast7d: Number(last7dResult?.value ?? 0),
     recentClicks: recentClicks.map(toClickRecord),

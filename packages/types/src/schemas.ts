@@ -55,6 +55,7 @@ export const ClickRecordSchema = z.object({
 export const UrlStatsSchema = z.object({
   url: UrlRecordSchema,
   totalClicks: z.number().int().nonnegative(),
+  clicksByDay: z.array(z.object({ date: z.string(), count: z.number() })),
   clicksLast24h: z.number().int().nonnegative(),
   clicksLast7d: z.number().int().nonnegative(),
   recentClicks: z.array(ClickRecordSchema),
