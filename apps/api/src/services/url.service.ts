@@ -152,10 +152,22 @@ export async function getUrlStats(slug: string): Promise<UrlStats | null> {
     .groupBy(sql`date_trunc('day', ${clicks.clickedAt})`)
     .orderBy(sql`date_trunc('day', ${clicks.clickedAt})`)
 
+  const dayMap = new Map<string, number>()
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date(now)
+    d.setUTCDate(d.getUTCDate() - i)
+    dayMap.set(d.toISOString().slice(0, 10), 0)
+  }
+  for (const r of clicksByDay) {
+    if (dayMap.has(r.date)) {
+      dayMap.set(r.date, Number(r.count))
+    }
+  }
+
   return {
     url: toUrlRecord(url),
     totalClicks: Number(totalResult?.value ?? 0),
-    clicksByDay: clicksByDay.map((r) => ({ date: r.date, count: Number(r.count) })),
+    clicksByDay: Array.from(dayMap, ([date, clicks]) => ({ date, count: clicks })),
     clicksLast24h: Number(last24hResult?.value ?? 0),
     clicksLast7d: Number(last7dResult?.value ?? 0),
     recentClicks: recentClicks.map(toClickRecord),
