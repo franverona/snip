@@ -121,20 +121,14 @@ export async function getUrlStats(slug: string): Promise<UrlStats | null> {
   const ago7d = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
   const ago30d = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
 
-  const [totalResult] = await db
-    .select({ value: count() })
+  const [clickStats] = await db
+    .select({
+      total: count(),
+      last24h: sql<number>`count(*) filter (where ${clicks.clickedAt} >= ${ago24h})`,
+      last7d: sql<number>`count(*) filter (where ${clicks.clickedAt} >= ${ago7d})`,
+    })
     .from(clicks)
     .where(eq(clicks.urlId, url.id))
-
-  const [last24hResult] = await db
-    .select({ value: count() })
-    .from(clicks)
-    .where(and(eq(clicks.urlId, url.id), gte(clicks.clickedAt, ago24h)))
-
-  const [last7dResult] = await db
-    .select({ value: count() })
-    .from(clicks)
-    .where(and(eq(clicks.urlId, url.id), gte(clicks.clickedAt, ago7d)))
 
   const recentClicks = await db.query.clicks.findMany({
     where: eq(clicks.urlId, url.id),
@@ -166,10 +160,10 @@ export async function getUrlStats(slug: string): Promise<UrlStats | null> {
 
   return {
     url: toUrlRecord(url),
-    totalClicks: Number(totalResult?.value ?? 0),
+    totalClicks: Number(clickStats?.total ?? 0),
     clicksByDay: Array.from(dayMap, ([date, clicks]) => ({ date, count: clicks })),
-    clicksLast24h: Number(last24hResult?.value ?? 0),
-    clicksLast7d: Number(last7dResult?.value ?? 0),
+    clicksLast24h: Number(clickStats?.last24h ?? 0),
+    clicksLast7d: Number(clickStats?.last7d ?? 0),
     recentClicks: recentClicks.map(toClickRecord),
   }
 }
