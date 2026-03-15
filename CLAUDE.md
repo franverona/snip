@@ -31,6 +31,7 @@ Guidelines for Claude Code when working in this repository.
 - After changing the schema, run `pnpm --filter api run migrate:generate` then `pnpm migrate`.
 - Never write raw SQL — use Drizzle's query builder.
 - If `pnpm migrate` fails with `ECONNREFUSED`, the Docker container may need to be recreated: `docker compose down && docker compose up -d`.
+- Pool is configured in `apps/api/src/db/client.ts`. `DATABASE_POOL_MAX` (default: 10) is the only tunable env var — `idleTimeoutMillis` (30s) and `connectionTimeoutMillis` (5s) are hardcoded. Do not add more pool env vars without good reason.
 
 ## Code style
 
