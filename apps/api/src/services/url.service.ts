@@ -28,6 +28,15 @@ function toClickRecord(click: Click): ClickRecord {
   }
 }
 
+function isUniqueConstraintError(err: unknown): boolean {
+  return (
+    typeof err === 'object' &&
+    err !== null &&
+    'code' in err &&
+    (err as Record<string, unknown>)['code'] === '23505'
+  )
+}
+
 export async function createUrl(input: CreateUrlInput, baseUrl: string) {
   const baseHost = new URL(baseUrl).host
   const { host, hostname } = new URL(input.originalUrl)
@@ -47,8 +56,6 @@ export async function createUrl(input: CreateUrlInput, baseUrl: string) {
     throw new Error('PRIVATE_ADDRESS')
   }
 
-  const slug = input.customSlug ?? nanoid(8)
-
   if (input.customSlug) {
     const existing = await db.query.urls.findFirst({
       where: eq(urls.slug, input.customSlug),
@@ -58,22 +65,32 @@ export async function createUrl(input: CreateUrlInput, baseUrl: string) {
     }
   }
 
-  const [url] = await db
-    .insert(urls)
-    .values({
-      slug,
-      originalUrl: input.originalUrl,
-      customSlug: !!input.customSlug,
-      expiresAt: input.expiresAt ? new Date(input.expiresAt) : null,
-    })
-    .returning()
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const slug = input.customSlug ?? nanoid(8)
+    try {
+      const [url] = await db
+        .insert(urls)
+        .values({
+          slug,
+          originalUrl: input.originalUrl,
+          customSlug: !!input.customSlug,
+          expiresAt: input.expiresAt ? new Date(input.expiresAt) : null,
+        })
+        .returning()
 
-  if (!url) throw new Error('Failed to create URL')
+      if (!url) throw new Error('Failed to create URL')
 
-  return {
-    ...toUrlRecord(url),
-    shortUrl: `${baseUrl}/${url.slug}`,
+      return {
+        ...toUrlRecord(url),
+        shortUrl: `${baseUrl}/${url.slug}`,
+      }
+    } catch (err) {
+      if (isUniqueConstraintError(err) && !input.customSlug) continue
+      throw err
+    }
   }
+
+  throw new Error('Failed to generate unique slug after retries')
 }
 
 export async function findUrlBySlug(slug: string): Promise<Url | null> {
