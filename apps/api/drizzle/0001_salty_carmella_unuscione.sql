@@ -1,0 +1,1 @@
+CREATE INDEX "clicks_url_id_idx" ON "clicks" USING btree ("url_id");
