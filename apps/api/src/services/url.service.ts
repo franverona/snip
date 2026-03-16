@@ -203,3 +203,16 @@ export async function getUrlList(page: number, perPage: number, offset: number) 
     },
   }
 }
+
+export async function getUrlPreview(slug: string): Promise<UrlRecord | null> {
+  const url = await findUrlBySlug(slug)
+  if (!url) {
+    return null
+  }
+
+  if (url.expiresAt && url.expiresAt < new Date()) {
+    throw new Error('EXPIRED')
+  }
+
+  return toUrlRecord(url)
+}

@@ -60,6 +60,7 @@ import {
   getUrlStats,
   deleteUrl,
   getUrlList,
+  getUrlPreview,
 } from './url.service.js'
 import dns from 'node:dns/promises'
 import ipaddr from 'ipaddr.js'
@@ -261,5 +262,34 @@ describe('getUrlList', () => {
       perPage: 20,
       totalPages: 0,
     })
+  })
+})
+
+describe('getUrlPreview', () => {
+  it('returns preview for existing url record', async () => {
+    mockFindFirstUrl.mockResolvedValue(mockUrlRow)
+    const result = await getUrlPreview('abc12345')
+    expect(result).toEqual({
+      id: mockUrlRow.id,
+      slug: mockUrlRow.slug,
+      originalUrl: mockUrlRow.originalUrl,
+      customSlug: mockUrlRow.customSlug,
+      expiresAt: null,
+      createdAt: '2024-01-01T00:00:00.000Z',
+    })
+  })
+
+  it('returns null if url does not exist', async () => {
+    mockFindFirstUrl.mockResolvedValue(null)
+    const result = await getUrlPreview('abc12345')
+    expect(result).toBeNull()
+  })
+
+  it('throws EXPIRED if url is expired', async () => {
+    mockFindFirstUrl.mockResolvedValue({
+      ...mockUrlRow,
+      expiresAt: new Date('2020-01-01'),
+    })
+    await expect(getUrlPreview('abc12345')).rejects.toThrow('EXPIRED')
   })
 })

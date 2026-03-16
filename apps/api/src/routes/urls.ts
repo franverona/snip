@@ -1,6 +1,12 @@
 import type { FastifyInstance } from 'fastify'
 import { CreateUrlInputSchema } from '@snip/types'
-import { createUrl, getUrlStats, deleteUrl, getUrlList } from '../services/url.service.js'
+import {
+  createUrl,
+  getUrlStats,
+  deleteUrl,
+  getUrlList,
+  getUrlPreview,
+} from '../services/url.service.js'
 import { env } from '../config.js'
 import { parsePagination } from '../lib/pagination.js'
 
@@ -77,5 +83,26 @@ export async function urlRoutes(fastify: FastifyInstance) {
       return reply.status(404).send({ error: 'URL not found' })
     }
     return reply.status(204).send()
+  })
+
+  // GET /preview/:slug
+  fastify.get<{ Params: { slug: string } }>('/preview/:slug', async (request, reply) => {
+    const { slug } = request.params
+    try {
+      const url = await getUrlPreview(slug)
+      if (!url) {
+        return reply.status(404).send({ error: 'URL not found' })
+      }
+
+      return reply.send(url)
+    } catch (err) {
+      if (err instanceof Error) {
+        switch (err.message) {
+          case 'EXPIRED':
+            return reply.status(410).send({ error: 'URL is expired' })
+        }
+      }
+      throw err
+    }
   })
 }
