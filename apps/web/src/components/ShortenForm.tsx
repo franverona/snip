@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import styled from 'styled-components'
 import { api, ApiError } from '@/lib/api'
-import type { CreateUrlResponse } from '@snip/types'
+import { CreateUrlInputSchema, type CreateUrlResponse } from '@snip/types'
 
 // ---- Styled components ----
 
@@ -79,6 +79,12 @@ const SubmitButton = styled.button`
   }
 `
 
+const FieldErrorMessage = styled.p`
+  font-size: 0.75rem;
+  color: #b91c1c;
+  margin: 0;
+`
+
 const ErrorBox = styled.div`
   margin-top: 1rem;
   border: 1px solid #fca5a5;
@@ -150,33 +156,63 @@ const StatsLink = styled.a`
 
 // ---- Component ----
 
+function FieldErrors({ errors }: { errors?: string[] }) {
+  if (!errors?.length) return null
+
+  return (
+    <>
+      {errors.map((msg) => (
+        <FieldErrorMessage key={msg}>{msg}</FieldErrorMessage>
+      ))}
+    </>
+  )
+}
+
 export function ShortenForm() {
   const [originalUrl, setOriginalUrl] = useState('')
   const [customSlug, setCustomSlug] = useState('')
   const [expiresAt, setExpiresAt] = useState('')
   const [result, setResult] = useState<CreateUrlResponse | null>(null)
-  const [error, setError] = useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({})
+  const [apiError, setApiError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [copied, setCopied] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    setError(null)
+    setFieldErrors({})
+    setApiError(null)
     setResult(null)
     setLoading(true)
 
+    const body = {
+      originalUrl,
+      customSlug: customSlug || undefined,
+      expiresAt: expiresAt ? new Date(expiresAt).toISOString() : undefined,
+    }
+
+    const validated = CreateUrlInputSchema.safeParse(body)
+    if (!validated.success) {
+      const errors: Record<string, string[]> = {}
+      for (const issue of validated.error.issues) {
+        const field = issue.path[0]
+        if (typeof field === 'string') {
+          errors[field] = [...(errors[field] ?? []), issue.message]
+        }
+      }
+      setFieldErrors(errors)
+      setLoading(false)
+      return
+    }
+
     try {
-      const res = await api.createUrl({
-        originalUrl,
-        customSlug: customSlug || undefined,
-        expiresAt: expiresAt ? new Date(expiresAt).toISOString() : undefined,
-      })
+      const res = await api.createUrl(validated.data)
       setResult(res)
     } catch (err) {
       if (err instanceof ApiError) {
-        setError(err.message)
+        setApiError(err.message)
       } else {
-        setError('Unexpected error. Please try again.')
+        setApiError('Unexpected error. Please try again.')
       }
     } finally {
       setLoading(false)
@@ -202,17 +238,17 @@ export function ShortenForm() {
 
   return (
     <div>
-      <Form onSubmit={handleSubmit}>
+      <Form onSubmit={handleSubmit} noValidate>
         <Field>
           <Label htmlFor="url">URL to shorten</Label>
           <Input
             id="url"
             type="url"
-            required
             placeholder="https://example.com/very/long/url"
             value={originalUrl}
             onChange={(e) => setOriginalUrl(e.target.value)}
           />
+          <FieldErrors errors={fieldErrors.originalUrl} />
         </Field>
 
         <TwoCol>
@@ -224,9 +260,11 @@ export function ShortenForm() {
               id="slug"
               type="text"
               placeholder="my-link"
+              maxLength={50}
               value={customSlug}
               onChange={(e) => setCustomSlug(e.target.value)}
             />
+            <FieldErrors errors={fieldErrors.customSlug} />
           </Field>
 
           <Field>
@@ -239,6 +277,7 @@ export function ShortenForm() {
               value={expiresAt}
               onChange={(e) => setExpiresAt(e.target.value)}
             />
+            <FieldErrors errors={fieldErrors.expiresAt} />
           </Field>
         </TwoCol>
 
@@ -247,7 +286,7 @@ export function ShortenForm() {
         </SubmitButton>
       </Form>
 
-      {error && <ErrorBox>{error}</ErrorBox>}
+      {apiError && <ErrorBox>{apiError}</ErrorBox>}
 
       {result && (
         <ResultBox>
