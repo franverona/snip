@@ -14,7 +14,7 @@ const {
         return Promise.resolve(result).then(onFulfilled, onRejected)
       },
     }
-    const chainMethods = ['from', 'where', 'groupBy', 'orderBy']
+    const chainMethods = ['from', 'where', 'groupBy', 'orderBy', 'limit', 'offset']
     for (const method of chainMethods) {
       chain[method] = () => chain
     }
@@ -53,7 +53,14 @@ vi.mock('ipaddr.js', () => ({
   default: { parse: vi.fn(() => ({ range: () => 'unicast' })) },
 }))
 
-import { createUrl, findUrlBySlug, recordClick, getUrlStats, deleteUrl } from './url.service.js'
+import {
+  createUrl,
+  findUrlBySlug,
+  recordClick,
+  getUrlStats,
+  deleteUrl,
+  getUrlList,
+} from './url.service.js'
 import dns from 'node:dns/promises'
 import ipaddr from 'ipaddr.js'
 
@@ -213,5 +220,46 @@ describe('deleteUrl', () => {
     mockDeleteReturning.mockResolvedValue([])
     const result = await deleteUrl('notexist')
     expect(result).toBe(false)
+  })
+})
+
+describe('getUrlList', () => {
+  it('returns paginated results', async () => {
+    mockSelectChain
+      .mockReturnValueOnce(makeSelectChain([mockUrlRow])) // rows query
+      .mockReturnValueOnce(makeSelectChain([{ count: 1 }])) // count query
+    const result = await getUrlList(1, 10, 0)
+    expect(result).toEqual({
+      data: [
+        {
+          id: mockUrlRow.id,
+          slug: mockUrlRow.slug,
+          originalUrl: mockUrlRow.originalUrl,
+          customSlug: mockUrlRow.customSlug,
+          expiresAt: null,
+          createdAt: '2024-01-01T00:00:00.000Z',
+        },
+      ],
+      meta: {
+        total: 1,
+        page: 1,
+        perPage: 10,
+        totalPages: 1,
+      },
+    })
+  })
+
+  it('returns empty data when no URLs exist', async () => {
+    mockSelectChain
+      .mockReturnValueOnce(makeSelectChain([])) // rows query
+      .mockReturnValueOnce(makeSelectChain([{ count: 0 }])) // count query
+    const result = await getUrlList(1, 20, 0)
+    expect(result.data).toHaveLength(0)
+    expect(result.meta).toEqual({
+      total: 0,
+      page: 1,
+      perPage: 20,
+      totalPages: 0,
+    })
   })
 })

@@ -194,7 +194,7 @@ export async function getUrlList(page: number, perPage: number, offset: number) 
 
   const total = count[0]!.count
   return {
-    data: rows,
+    data: rows.map(toUrlRecord),
     meta: {
       total,
       page,
