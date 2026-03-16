@@ -102,6 +102,8 @@ pnpm dev
 | `pnpm format`                            | Format all files with Prettier               |
 | `pnpm format:check`                      | Check formatting without writing             |
 | `npx tsc -b --noEmit`                    | Type-check all packages from the root        |
+| `pnpm --filter api run test`             | Run API unit tests (no DB required)          |
+| `pnpm --filter api run test:watch`       | Run API tests in watch mode                  |
 | `pnpm --filter api run migrate:generate` | Generate migration files from schema changes |
 
 ## API reference
@@ -144,13 +146,14 @@ chore(deps): bump drizzle-orm to 0.40.0
 
 ## CI
 
-GitHub Actions runs three jobs on every push and pull request to `main`:
+GitHub Actions runs four jobs on every push and pull request to `main`:
 
-| Job         | What it does                                             |
-| ----------- | -------------------------------------------------------- |
-| `lint`      | ESLint + Prettier format check across all packages       |
-| `typecheck` | `tsc --noEmit` across all packages via Turborepo         |
-| `build`     | Full production build (runs after lint + typecheck pass) |
+| Job         | What it does                                                      |
+| ----------- | ----------------------------------------------------------------- |
+| `lint`      | ESLint + Prettier format check across all packages                |
+| `typecheck` | `tsc --noEmit` across all packages via Turborepo                  |
+| `test`      | API unit tests via Vitest (no database required, all deps mocked) |
+| `build`     | Full production build (runs after lint, typecheck, and test pass) |
 
 Dependabot is configured to open weekly PRs for npm and GitHub Actions updates, grouped by ecosystem (turbo, drizzle, nextjs, fastify, typescript).
 

@@ -57,12 +57,22 @@ Allowed types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chor
 - Each package has `composite: true` in its tsconfig to support project references.
 - `noEmit` must be passed via CLI, not set in `tsconfig.json`, because it conflicts with `composite`.
 
+## Testing
+
+- Tests live in `apps/api` alongside source files (`*.test.ts`).
+- Framework is **Vitest**. Run with `pnpm --filter api run test` (no database required — all DB calls are mocked).
+- `apps/api/src/db/__mocks__/client.ts` is the shared manual mock for `db/client.js`. Route tests call `vi.mock('../db/client.js')` with no factory to use it. Service tests override it with a custom factory via `vi.hoisted`.
+- Route tests use Fastify's `inject()` — no real HTTP server is started.
+- `apps/api/vitest.config.ts` sets a stub `DATABASE_URL` env var so `config.ts` doesn't throw at import time.
+- When adding a new route, add tests in `apps/api/src/routes/<name>.test.ts`. When adding a new service, add tests in `apps/api/src/services/<name>.test.ts`.
+
 ## Adding a new API endpoint
 
 1. Add the Zod schema to `packages/types/src/schemas.ts` and export the inferred type from `packages/types/src/index.ts`.
 2. Implement the service logic in `apps/api/src/services/`.
 3. Register the route in the appropriate file under `apps/api/src/routes/`.
 4. Update `apps/web/src/lib/api.ts` with the new typed fetch call.
+5. Add unit tests for the service (`*.test.ts`) and route (`*.test.ts`).
 
 ## Common commands
 
@@ -72,6 +82,8 @@ pnpm build                                  # build all packages
 pnpm lint                                   # lint all packages
 pnpm format                                 # format all files
 npx tsc -b --noEmit                         # type-check everything from the root
+pnpm --filter api run test                  # run API unit tests (no DB required)
+pnpm --filter api run test:watch            # run API tests in watch mode
 pnpm --filter api run migrate:generate      # generate migrations after schema change
 pnpm migrate                                # apply migrations
 ```
