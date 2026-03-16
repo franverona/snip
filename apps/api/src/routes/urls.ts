@@ -1,9 +1,20 @@
 import type { FastifyInstance } from 'fastify'
 import { CreateUrlInputSchema } from '@snip/types'
-import { createUrl, getUrlStats, deleteUrl } from '../services/url.service.js'
+import { createUrl, getUrlStats, deleteUrl, getUrlList } from '../services/url.service.js'
 import { env } from '../config.js'
+import { parsePagination } from '../lib/pagination.js'
 
 export async function urlRoutes(fastify: FastifyInstance) {
+  // GET /urls — lists created URLs
+  fastify.get<{ Querystring: { page?: number; perPage?: number } }>(
+    '/urls',
+    async (request, reply) => {
+      const { page, perPage, offset } = parsePagination(request.query)
+      const urls = await getUrlList(page, perPage, offset)
+      return reply.send(urls)
+    },
+  )
+
   // POST /urls — create short URL
   fastify.post(
     '/urls',

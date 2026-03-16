@@ -4,6 +4,7 @@ import rateLimit from '@fastify/rate-limit'
 import { urlRoutes } from './urls.js'
 
 vi.mock('../services/url.service.js', () => ({
+  getUrlList: vi.fn(),
   createUrl: vi.fn(),
   getUrlStats: vi.fn(),
   deleteUrl: vi.fn(),
@@ -11,7 +12,13 @@ vi.mock('../services/url.service.js', () => ({
 
 vi.mock('../db/client.js')
 
-import { createUrl, getUrlStats, deleteUrl } from '../services/url.service.js'
+vi.mock('../lib/pagination.js', () => ({
+  parsePagination: vi.fn(() => ({ page: 1, perPage: 20, offset: 0 })),
+  totalPages: vi.fn(() => 1),
+}))
+
+import { createUrl, getUrlStats, deleteUrl, getUrlList } from '../services/url.service.js'
+import { parsePagination } from '../lib/pagination.js'
 
 const mockUrlResult = {
   id: '00000000-0000-0000-0000-000000000001',
@@ -21,6 +28,15 @@ const mockUrlResult = {
   expiresAt: null,
   createdAt: '2024-01-01T00:00:00.000Z',
   shortUrl: 'http://localhost:3001/abc12345',
+}
+
+const mockUrlRecord = {
+  id: '00000000-0000-0000-0000-000000000001',
+  slug: 'abc12345',
+  originalUrl: 'https://example.com',
+  customSlug: false,
+  expiresAt: null,
+  createdAt: '2024-01-01T00:00:00.000Z',
 }
 
 let app: FastifyInstance
@@ -34,6 +50,54 @@ beforeEach(async () => {
 
 afterEach(async () => {
   await app.close()
+})
+
+describe('GET /urls', () => {
+  it('returns 200 with list without query params', async () => {
+    vi.mocked(getUrlList).mockResolvedValue({
+      data: [mockUrlRecord],
+      meta: {
+        page: 1,
+        perPage: 20,
+        total: 1,
+        totalPages: 1,
+      },
+    })
+
+    const res = await app.inject({ method: 'GET', url: '/urls' })
+
+    expect(res.statusCode).toBe(200)
+    expect(parsePagination).toHaveBeenCalledWith({})
+    expect(res.json().meta).toEqual({
+      page: 1,
+      perPage: 20,
+      total: 1,
+      totalPages: 1,
+    })
+  })
+
+  it('returns 200 with list with query params', async () => {
+    vi.mocked(getUrlList).mockResolvedValue({
+      data: [mockUrlRecord],
+      meta: {
+        page: 1,
+        perPage: 20,
+        total: 1,
+        totalPages: 1,
+      },
+    })
+
+    const res = await app.inject({ method: 'GET', url: '/urls?page=2&perPage=10' })
+
+    expect(res.statusCode).toBe(200)
+    expect(parsePagination).toHaveBeenCalledWith({ page: '2', perPage: '10' })
+    expect(res.json().meta).toEqual({
+      page: 1,
+      perPage: 20,
+      total: 1,
+      totalPages: 1,
+    })
+  })
 })
 
 describe('POST /urls', () => {

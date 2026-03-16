@@ -1,4 +1,4 @@
-import type { CreateUrlInput, CreateUrlResponse, UrlStats } from '@snip/types'
+import type { CreateUrlInput, CreateUrlResponse, UrlList, UrlStats } from '@snip/types'
 
 const BASE_URL = process.env['NEXT_PUBLIC_API_URL'] ?? 'http://localhost:3001'
 
@@ -28,6 +28,9 @@ export class ApiError extends Error {
 }
 
 export const api = {
+  getUrls: (page: number, perPage: number): Promise<UrlList> =>
+    apiFetch(`/urls?page=${page}&perPage=${perPage}`),
+
   createUrl: (input: CreateUrlInput): Promise<CreateUrlResponse> =>
     apiFetch('/urls', {
       method: 'POST',
