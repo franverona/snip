@@ -14,7 +14,12 @@ export async function redirectRoutes(fastify: FastifyInstance) {
     }
 
     if (url.expiresAt && url.expiresAt < new Date()) {
-      return reply.status(410).send({ error: 'URL has expired' })
+      return reply
+        .status(410)
+        .headers({
+          'cache-control': 'public, max-age=60',
+        })
+        .send({ error: 'URL has expired' })
     }
 
     // Fire-and-forget click recording
@@ -31,6 +36,10 @@ export async function redirectRoutes(fastify: FastifyInstance) {
       })
     })
 
-    return reply.redirect(url.originalUrl, 302)
+    return reply
+      .headers({
+        'cache-control': url.expiresAt ? 'no-store' : 'public, max-age=3600',
+      })
+      .redirect(url.originalUrl, url.expiresAt ? 302 : 301)
   })
 }

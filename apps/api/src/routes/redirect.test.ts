@@ -34,7 +34,7 @@ afterEach(async () => {
 })
 
 describe('GET /:slug', () => {
-  it('redirects to the original URL with 302', async () => {
+  it('redirects to the original URL with 301', async () => {
     vi.mocked(findUrlBySlug).mockResolvedValue(mockUrlRow)
 
     const res = await app.inject({
@@ -46,7 +46,8 @@ describe('GET /:slug', () => {
     // Flush setImmediate so the fire-and-forget recordClick executes
     await new Promise((resolve) => setImmediate(resolve))
 
-    expect(res.statusCode).toBe(302)
+    expect(res.statusCode).toBe(301)
+    expect(res.headers['cache-control']).toBe('public, max-age=3600')
     expect(res.headers.location).toBe('https://example.com')
     expect(vi.mocked(recordClick)).toHaveBeenCalledOnce()
     expect(vi.mocked(recordClick)).toHaveBeenCalledWith(
@@ -73,6 +74,7 @@ describe('GET /:slug', () => {
     const res = await app.inject({ method: 'GET', url: '/abc12345' })
 
     expect(res.statusCode).toBe(410)
+    expect(res.headers['cache-control']).toBe('public, max-age=60')
     expect(res.json().error).toBe('URL has expired')
   })
 
@@ -85,5 +87,6 @@ describe('GET /:slug', () => {
     const res = await app.inject({ method: 'GET', url: '/abc12345' })
 
     expect(res.statusCode).toBe(302)
+    expect(res.headers['cache-control']).toBe('no-store')
   })
 })
