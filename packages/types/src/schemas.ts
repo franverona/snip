@@ -71,3 +71,15 @@ export const HealthResponseSchema = z.object({
   db: z.enum(['ok', 'error']),
   timestamp: z.iso.datetime(),
 })
+
+export const MetaPaginationSchema = z.object({
+  total: z.number().int().nonnegative(),
+  page: z.number().int().nonnegative(),
+  perPage: z.number().int().nonnegative(),
+  totalPages: z.number().int().nonnegative(),
+})
+
+export const UrlListSchema = z.object({
+  data: z.array(UrlRecordSchema),
+  meta: MetaPaginationSchema,
+})

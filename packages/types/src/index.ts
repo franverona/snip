@@ -11,6 +11,8 @@ import type {
   ErrorResponseSchema,
   HealthResponseSchema,
   SlugParamSchema,
+  MetaPaginationSchema,
+  UrlListSchema,
 } from './schemas.js'
 
 export type CreateUrlInput = z.infer<typeof CreateUrlInputSchema>
@@ -21,3 +23,5 @@ export type UrlStats = z.infer<typeof UrlStatsSchema>
 export type ErrorResponse = z.infer<typeof ErrorResponseSchema>
 export type HealthResponse = z.infer<typeof HealthResponseSchema>
 export type SlugParam = z.infer<typeof SlugParamSchema>
+export type MetaPagination = z.infer<typeof MetaPaginationSchema>
+export type UrlList = z.infer<typeof UrlListSchema>

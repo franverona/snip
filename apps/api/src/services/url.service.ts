@@ -1,10 +1,11 @@
 import ipaddr from 'ipaddr.js'
-import { eq, count, and, gte, sql } from 'drizzle-orm'
+import { eq, count, and, gte, sql, desc } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 import { db } from '../db/client.js'
 import { urls, clicks, type Url, type Click } from '../db/schema.js'
 import type { CreateUrlInput, UrlStats, ClickRecord, UrlRecord } from '@snip/types'
 import dns from 'node:dns/promises'
+import { totalPages } from '../lib/pagination.js'
 
 function toUrlRecord(url: Url): UrlRecord {
   return {
@@ -171,4 +172,34 @@ export async function getUrlStats(slug: string): Promise<UrlStats | null> {
 export async function deleteUrl(slug: string): Promise<boolean> {
   const result = await db.delete(urls).where(eq(urls.slug, slug)).returning()
   return result.length > 0
+}
+
+export async function getUrlList(page: number, perPage: number, offset: number) {
+  const [rows, count] = await Promise.all([
+    db
+      .select({
+        id: urls.id,
+        slug: urls.slug,
+        originalUrl: urls.originalUrl,
+        customSlug: urls.customSlug,
+        expiresAt: urls.expiresAt,
+        createdAt: urls.createdAt,
+      })
+      .from(urls)
+      .orderBy(desc(urls.createdAt))
+      .limit(perPage)
+      .offset(offset),
+    db.select({ count: sql<number>`cast(count(*) as int)` }).from(urls),
+  ])
+
+  const total = count[0]!.count
+  return {
+    data: rows,
+    meta: {
+      total,
+      page,
+      perPage,
+      totalPages: totalPages(total, perPage),
+    },
+  }
 }
