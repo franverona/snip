@@ -185,7 +185,17 @@ export function ShortenForm() {
 
   async function handleCopy() {
     if (!result) return
-    await navigator.clipboard.writeText(result.shortUrl)
+    try {
+      await navigator.clipboard.writeText(result.shortUrl)
+    } catch {
+      // fallback
+      const el = document.createElement('textarea')
+      el.value = result.shortUrl
+      document.body.appendChild(el)
+      el.select()
+      document.execCommand('copy')
+      document.body.removeChild(el)
+    }
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
