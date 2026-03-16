@@ -8,6 +8,7 @@ vi.mock('../services/url.service.js', () => ({
   createUrl: vi.fn(),
   getUrlStats: vi.fn(),
   deleteUrl: vi.fn(),
+  getUrlPreview: vi.fn(),
 }))
 
 vi.mock('../db/client.js')
@@ -17,7 +18,13 @@ vi.mock('../lib/pagination.js', () => ({
   totalPages: vi.fn(() => 1),
 }))
 
-import { createUrl, getUrlStats, deleteUrl, getUrlList } from '../services/url.service.js'
+import {
+  createUrl,
+  getUrlStats,
+  deleteUrl,
+  getUrlList,
+  getUrlPreview,
+} from '../services/url.service.js'
 import { parsePagination } from '../lib/pagination.js'
 
 const mockUrlResult = {
@@ -239,5 +246,40 @@ describe('DELETE /urls/:slug', () => {
 
     expect(res.statusCode).toBe(404)
     expect(res.json().error).toBe('URL not found')
+  })
+})
+
+describe('GET /preview/:slug', () => {
+  it('returns 200 with preview', async () => {
+    vi.mocked(getUrlPreview).mockResolvedValue(mockUrlRecord)
+
+    const res = await app.inject({ method: 'GET', url: '/preview/abc12345' })
+
+    expect(res.statusCode).toBe(200)
+    expect(res.json()).toEqual(mockUrlRecord)
+  })
+
+  it('returns 404 if not found', async () => {
+    vi.mocked(getUrlPreview).mockResolvedValue(null)
+
+    const res = await app.inject({ method: 'GET', url: '/preview/abc12345' })
+
+    expect(res.statusCode).toBe(404)
+  })
+
+  it('returns 410 if expired', async () => {
+    vi.mocked(getUrlPreview).mockRejectedValue(new Error('EXPIRED'))
+
+    const res = await app.inject({ method: 'GET', url: '/preview/abc12345' })
+
+    expect(res.statusCode).toBe(410)
+  })
+
+  it('propagates unexpected errors as 500', async () => {
+    vi.mocked(getUrlPreview).mockRejectedValue(new Error('Unexpected DB error'))
+
+    const res = await app.inject({ method: 'GET', url: '/preview/abc12345' })
+
+    expect(res.statusCode).toBe(500)
   })
 })
