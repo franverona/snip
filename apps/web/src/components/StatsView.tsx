@@ -8,7 +8,7 @@ import type { UrlStats } from '@snip/types'
 const PageTitle = styled.h1`
   font-size: 1.5rem;
   font-weight: 700;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.5rem;
 
   span {
     font-family: monospace;
@@ -140,6 +140,16 @@ const BackLink = styled.a`
   }
 `
 
+const ExpiredBanner = styled.div`
+  background-color: #fff3e0;
+  border: 1px solid #ed6c02;
+  border-radius: 0.5rem;
+  color: #b45309;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  margin-bottom: 1.5rem;
+`
+
 // ---- Component ----
 
 interface Props {
@@ -155,6 +165,11 @@ export function StatsView({ stats, slug }: Props) {
     return Math.round((v / maxClicks) * 100)
   }
 
+  const isExpired = url.expiresAt ? new Date(url.expiresAt) < new Date() : false
+  const expiresAtFormatted = url.expiresAt
+    ? new Date(url.expiresAt).toLocaleDateString('en-US', { dateStyle: 'long' })
+    : ''
+
   return (
     <div>
       <PageTitle>
@@ -165,16 +180,14 @@ export function StatsView({ stats, slug }: Props) {
         {new Date(url.createdAt).toLocaleDateString('en-US', {
           dateStyle: 'long',
         })}
-        {url.expiresAt && (
-          <>
-            {' '}
-            · Expires{' '}
-            {new Date(url.expiresAt).toLocaleDateString('en-US', {
-              dateStyle: 'long',
-            })}
-          </>
-        )}
+        {url.expiresAt && !isExpired && <>· Expires on {expiresAtFormatted}</>}
       </SubText>
+
+      {isExpired && (
+        <ExpiredBanner>
+          This URL expired on {expiresAtFormatted} and now returns 410 Gone.
+        </ExpiredBanner>
+      )}
 
       <Card>
         <CardLabel>Original URL</CardLabel>
