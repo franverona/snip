@@ -2,13 +2,14 @@
 
 import styled from 'styled-components'
 import type { UrlStats } from '@snip/types'
+import { useMemo } from 'react'
 
 // ---- Styled components ----
 
 const PageTitle = styled.h1`
   font-size: 1.5rem;
   font-weight: 700;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.5rem;
 
   span {
     font-family: monospace;
@@ -140,6 +141,14 @@ const BackLink = styled.a`
   }
 `
 
+const ExpiredBadge = styled.span`
+  background-color: #ffe2b7;
+  color: #ed6c02;
+  padding: 0.25rem;
+  border-radius: 4px;
+  margin-left: 0.25rem;
+`
+
 // ---- Component ----
 
 interface Props {
@@ -155,6 +164,18 @@ export function StatsView({ stats, slug }: Props) {
     return Math.round((v / maxClicks) * 100)
   }
 
+  const expiresAt = useMemo(
+    () => ({
+      formatted: url.expiresAt
+        ? new Date(url.expiresAt).toLocaleDateString('en-US', {
+            dateStyle: 'long',
+          })
+        : '',
+      isExpired: url.expiresAt ? new Date(url.expiresAt) < new Date() : false,
+    }),
+    [url.expiresAt],
+  )
+
   return (
     <div>
       <PageTitle>
@@ -168,10 +189,11 @@ export function StatsView({ stats, slug }: Props) {
         {url.expiresAt && (
           <>
             {' '}
-            · Expires{' '}
-            {new Date(url.expiresAt).toLocaleDateString('en-US', {
-              dateStyle: 'long',
-            })}
+            {expiresAt.isExpired ? (
+              <ExpiredBadge>Expired on {expiresAt.formatted}</ExpiredBadge>
+            ) : (
+              <>· Expires {expiresAt.formatted}</>
+            )}
           </>
         )}
       </SubText>
