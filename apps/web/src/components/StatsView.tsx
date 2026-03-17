@@ -192,7 +192,7 @@ export function StatsView({ stats, slug }: Props) {
             {expiresAt.isExpired ? (
               <ExpiredBadge>Expired on {expiresAt.formatted}</ExpiredBadge>
             ) : (
-              <>· Expires {expiresAt.formatted}</>
+              <>· Expires on {expiresAt.formatted}</>
             )}
           </>
         )}
