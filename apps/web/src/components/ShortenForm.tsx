@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { api, ApiError } from '@/lib/api'
 import { CreateUrlInputSchema, type CreateUrlResponse } from '@snip/types'
@@ -100,6 +100,13 @@ const ResultRow = styled.div`
   gap: 0.5rem;
 `
 
+const ResultActions = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+`
+
 const ShortLink = styled.a`
   flex: 1;
   overflow: hidden;
@@ -111,7 +118,7 @@ const ShortLink = styled.a`
   text-decoration: underline;
 `
 
-const CopyButton = styled.button`
+const ActionButton = styled.button`
   flex-shrink: 0;
   border: 1px solid #d1d5db;
   background: #fff;
@@ -163,6 +170,11 @@ export function ShortenForm() {
   const [apiError, setApiError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [canShare, setCanShare] = useState(false)
+
+  useEffect(() => {
+    setCanShare(!!navigator.share)
+  }, [])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -225,6 +237,14 @@ export function ShortenForm() {
     setTimeout(() => setCopied(false), 2000)
   }
 
+  async function handleShare() {
+    if (!result) return
+
+    if (navigator.share) {
+      await navigator.share({ url: result.shortUrl }).catch(() => {})
+    }
+  }
+
   return (
     <div>
       <Form onSubmit={handleSubmit} noValidate>
@@ -284,7 +304,10 @@ export function ShortenForm() {
             <ShortLink href={result.shortUrl} target="_blank" rel="noopener noreferrer">
               {result.shortUrl}
             </ShortLink>
-            <CopyButton onClick={handleCopy}>{copied ? 'Copied!' : 'Copy'}</CopyButton>
+            <ResultActions>
+              <ActionButton onClick={handleCopy}>{copied ? 'Copied!' : 'Copy'}</ActionButton>
+              {canShare && <ActionButton onClick={handleShare}>Share</ActionButton>}
+            </ResultActions>
           </ResultRow>
           <StatsLink href={`/stats/${result.slug}`}>View stats →</StatsLink>
         </ResultBox>
