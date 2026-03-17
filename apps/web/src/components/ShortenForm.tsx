@@ -4,6 +4,8 @@ import { useState } from 'react'
 import styled from 'styled-components'
 import { api, ApiError } from '@/lib/api'
 import { CreateUrlInputSchema, type CreateUrlResponse } from '@snip/types'
+import { Button } from './ui'
+import { useToast } from './Toast'
 
 // ---- Styled components ----
 
@@ -57,26 +59,8 @@ const TwoCol = styled.div`
   }
 `
 
-const SubmitButton = styled.button`
+const SubmitButton = styled(Button)`
   width: 100%;
-  background: #2563eb;
-  color: #fff;
-  border: none;
-  border-radius: 0.375rem;
-  padding: 0.625rem 1rem;
-  font-size: 0.875rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s;
-
-  &:hover:not(:disabled) {
-    background: #1d4ed8;
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
 `
 
 const FieldErrorMessage = styled.p`
@@ -169,6 +153,8 @@ function FieldErrors({ errors }: { errors?: string[] }) {
 }
 
 export function ShortenForm() {
+  const { showToast } = useToast()
+
   const [originalUrl, setOriginalUrl] = useState('')
   const [customSlug, setCustomSlug] = useState('')
   const [expiresAt, setExpiresAt] = useState('')
@@ -208,11 +194,14 @@ export function ShortenForm() {
     try {
       const res = await api.createUrl(validated.data)
       setResult(res)
+      showToast('URL created', 'success')
     } catch (err) {
       if (err instanceof ApiError) {
         setApiError(err.message)
+        showToast(err.message, 'error')
       } else {
         setApiError('Unexpected error. Please try again.')
+        showToast('Unexpected error. Please try again.', 'error')
       }
     } finally {
       setLoading(false)
@@ -281,7 +270,7 @@ export function ShortenForm() {
           </Field>
         </TwoCol>
 
-        <SubmitButton type="submit" disabled={loading}>
+        <SubmitButton color="primary" type="submit" disabled={loading}>
           {loading ? 'Shortening…' : 'Shorten URL'}
         </SubmitButton>
       </Form>
