@@ -3,8 +3,12 @@ import type { CreateUrlInput, CreateUrlResponse, UrlList, UrlStats } from '@snip
 const BASE_URL = process.env['NEXT_PUBLIC_API_URL'] ?? 'http://localhost:3001'
 
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
+  const headers = {
+    ...(init?.method !== 'DELETE' ? { 'Content-Type': 'application/json' } : {}),
+    ...init?.headers,
+  }
   const res = await fetch(`${BASE_URL}${path}`, {
-    headers: { 'Content-Type': 'application/json', ...init?.headers },
+    headers,
     ...init,
   })
 

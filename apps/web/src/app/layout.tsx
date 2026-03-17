@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 import { StyledComponentsRegistry } from '@/lib/StyledComponentsRegistry'
 import { Header } from '@/components/Header'
+import { ToastProvider } from '@/components/Toast'
 
 export const metadata: Metadata = {
   title: 'Snip — URL Shortener',
@@ -14,15 +15,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <StyledComponentsRegistry>
           <Header />
-          <main
-            style={{
-              maxWidth: 720,
-              margin: '0 auto',
-              padding: '2.5rem 1rem',
-            }}
-          >
-            {children}
-          </main>
+          <ToastProvider>
+            <main
+              style={{
+                maxWidth: 720,
+                margin: '0 auto',
+                padding: '2.5rem 1rem',
+              }}
+            >
+              {children}
+            </main>
+          </ToastProvider>
         </StyledComponentsRegistry>
       </body>
     </html>

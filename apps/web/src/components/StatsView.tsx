@@ -2,13 +2,25 @@
 
 import styled from 'styled-components'
 import type { UrlStats } from '@snip/types'
+import { Button } from './ui'
+import { api } from '@/lib/api'
+import { useRouter } from 'next/navigation'
+import { useToast } from './Toast'
 
 // ---- Styled components ----
 
+const PageHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  margin-bottom: 0.5rem;
+`
+
 const PageTitle = styled.h1`
+  flex: 1;
   font-size: 1.5rem;
   font-weight: 700;
-  margin-bottom: 0.5rem;
 
   span {
     font-family: monospace;
@@ -158,11 +170,27 @@ interface Props {
 }
 
 export function StatsView({ stats, slug }: Props) {
+  const router = useRouter()
+  const { showToast } = useToast()
+
   const { url, totalClicks, clicksLast24h, clicksLast7d } = stats
   const maxClicks = Math.max(totalClicks, 1)
 
   function pct(v: number) {
     return Math.round((v / maxClicks) * 100)
+  }
+
+  const handleDelete = async () => {
+    if (window.confirm('After removing this URL, it will no longer be available.')) {
+      try {
+        await api.deleteUrl(slug)
+        showToast('URL removed', 'success')
+        router.replace('/')
+      } catch (err) {
+        console.error(err)
+        showToast('An error ocurred when deleting the URL.', 'error')
+      }
+    }
   }
 
   const isExpired = url.expiresAt ? new Date(url.expiresAt) < new Date() : false
@@ -172,9 +200,14 @@ export function StatsView({ stats, slug }: Props) {
 
   return (
     <div>
-      <PageTitle>
-        Stats for <span>/{slug}</span>
-      </PageTitle>
+      <PageHeader>
+        <PageTitle>
+          Stats for <span>/{slug}</span>
+        </PageTitle>
+        <Button color="error" onClick={handleDelete}>
+          Delete
+        </Button>
+      </PageHeader>
       <SubText>
         Created{' '}
         {new Date(url.createdAt).toLocaleDateString('en-US', {
