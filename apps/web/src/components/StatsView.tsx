@@ -2,7 +2,6 @@
 
 import styled from 'styled-components'
 import type { UrlStats } from '@snip/types'
-import { useMemo } from 'react'
 
 // ---- Styled components ----
 
@@ -141,12 +140,14 @@ const BackLink = styled.a`
   }
 `
 
-const ExpiredBadge = styled.span`
-  background-color: #ffe2b7;
-  color: #ed6c02;
-  padding: 0.25rem;
-  border-radius: 4px;
-  margin-left: 0.25rem;
+const ExpiredBanner = styled.div`
+  background-color: #fff3e0;
+  border: 1px solid #ed6c02;
+  border-radius: 0.5rem;
+  color: #b45309;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  margin-bottom: 1.5rem;
 `
 
 // ---- Component ----
@@ -164,17 +165,10 @@ export function StatsView({ stats, slug }: Props) {
     return Math.round((v / maxClicks) * 100)
   }
 
-  const expiresAt = useMemo(
-    () => ({
-      formatted: url.expiresAt
-        ? new Date(url.expiresAt).toLocaleDateString('en-US', {
-            dateStyle: 'long',
-          })
-        : '',
-      isExpired: url.expiresAt ? new Date(url.expiresAt) < new Date() : false,
-    }),
-    [url.expiresAt],
-  )
+  const isExpired = url.expiresAt ? new Date(url.expiresAt) < new Date() : false
+  const expiresAtFormatted = url.expiresAt
+    ? new Date(url.expiresAt).toLocaleDateString('en-US', { dateStyle: 'long' })
+    : ''
 
   return (
     <div>
@@ -186,17 +180,14 @@ export function StatsView({ stats, slug }: Props) {
         {new Date(url.createdAt).toLocaleDateString('en-US', {
           dateStyle: 'long',
         })}
-        {url.expiresAt && (
-          <>
-            {' '}
-            {expiresAt.isExpired ? (
-              <ExpiredBadge>Expired on {expiresAt.formatted}</ExpiredBadge>
-            ) : (
-              <>· Expires on {expiresAt.formatted}</>
-            )}
-          </>
-        )}
+        {url.expiresAt && !isExpired && <>· Expires on {expiresAtFormatted}</>}
       </SubText>
+
+      {isExpired && (
+        <ExpiredBanner>
+          This URL expired on {expiresAtFormatted} and now returns 410 Gone.
+        </ExpiredBanner>
+      )}
 
       <Card>
         <CardLabel>Original URL</CardLabel>
