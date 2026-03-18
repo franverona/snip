@@ -1,5 +1,13 @@
 import { UrlsView } from '@/components/UrlsView'
 import { api } from '@/lib/api'
+import { type Metadata } from 'next'
+
+export function generateMetadata(): Metadata {
+  return {
+    title: 'URLs — snip',
+    description: 'List of created URLs',
+  }
+}
 
 interface Props {
   searchParams: Promise<{ page?: string; perPage?: string }>

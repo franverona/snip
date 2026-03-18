@@ -1,5 +1,3 @@
-'use client'
-
 import { type UrlListRecord } from '@snip/types'
 import styled from 'styled-components'
 
