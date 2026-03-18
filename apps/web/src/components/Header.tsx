@@ -10,9 +10,12 @@ const Nav = styled.header`
 `
 
 const Inner = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   max-width: 720px;
   margin: 0 auto;
-  padding: 1rem;
+  padding: 0.5rem 1rem;
 `
 
 const Logo = styled(Link)`
@@ -30,6 +33,24 @@ const Logo = styled(Link)`
   }
 `
 
+const Menu = styled.div`
+  display: flex;
+  align-items: center;
+`
+
+const MenuItem = styled(Link)`
+  padding: 0.625rem 0.825rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #4f5969;
+  border-radius: 4px;
+
+  &:hover {
+    color: #21252c;
+    background-color: #f9fafb;
+  }
+`
+
 export function Header() {
   return (
     <Nav>
@@ -38,6 +59,10 @@ export function Header() {
           <Image src="/scissors.svg" alt="" width={20} height={20} />
           snip
         </Logo>
+        <Menu>
+          <MenuItem href="/urls">URLs</MenuItem>
+          <MenuItem href="/new">Shorten a URL</MenuItem>
+        </Menu>
       </Inner>
     </Nav>
   )
