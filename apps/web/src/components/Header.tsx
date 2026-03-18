@@ -2,6 +2,7 @@
 
 import styled from 'styled-components'
 import Link from 'next/link'
+import Image from 'next/image'
 
 const Nav = styled.header`
   border-bottom: 1px solid #e5e7eb;
@@ -15,6 +16,9 @@ const Inner = styled.div`
 `
 
 const Logo = styled(Link)`
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
   font-size: 1.25rem;
   font-weight: 700;
   letter-spacing: -0.02em;
@@ -30,7 +34,10 @@ export function Header() {
   return (
     <Nav>
       <Inner>
-        <Logo href="/">✂️ snip</Logo>
+        <Logo href="/">
+          <Image src="/icon.svg" alt="" width={20} height={20} />
+          snip
+        </Logo>
       </Inner>
     </Nav>
   )
