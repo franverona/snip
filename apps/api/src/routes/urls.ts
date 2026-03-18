@@ -14,6 +14,17 @@ export async function urlRoutes(fastify: FastifyInstance) {
   // GET /urls — lists created URLs
   fastify.get<{ Querystring: { page?: number; perPage?: number } }>(
     '/urls',
+    {
+      schema: {
+        querystring: {
+          type: 'object',
+          properties: {
+            page: { type: 'integer', minimum: 1 },
+            perPage: { type: 'integer', minimum: 1, maximum: 50 },
+          },
+        },
+      },
+    },
     async (request, reply) => {
       const { page, perPage, offset } = parsePagination(request.query)
       const urls = await getUrlList(page, perPage, offset)
