@@ -12,6 +12,9 @@
     "migrate": {
       "cache": false
     },
+    "seed": {
+      "cache": false
+    },
     "lint": {
       "dependsOn": ["^lint"]
     },
