@@ -1,6 +1,6 @@
 'use client'
 
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import styled from 'styled-components'
 
 const StyledPerPageSelector = styled.select`
@@ -8,19 +8,15 @@ const StyledPerPageSelector = styled.select`
   border-radius: 4px;
 `
 
-export function PerPageSelector() {
+export function PerPageSelector({ perPage }: { perPage: number }) {
   const router = useRouter()
-  const searchParams = useSearchParams()
 
   function handleChange(e: React.ChangeEvent<HTMLSelectElement>) {
-    const params = new URLSearchParams(searchParams.toString())
-    params.set('perPage', e.target.value)
-    params.set('page', '1')
-    router.push(`/urls?${params.toString()}`)
+    router.push(`/urls?page=1&perPage=${e.target.value}`)
   }
 
   return (
-    <StyledPerPageSelector value={searchParams.get('perPage') ?? '25'} onChange={handleChange}>
+    <StyledPerPageSelector value={perPage} onChange={handleChange}>
       <option value="10">10</option>
       <option value="25">25</option>
       <option value="50">50</option>

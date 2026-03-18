@@ -27,7 +27,7 @@ export function UrlsView({ data }: { data: UrlList }) {
   return (
     <div>
       <PerPageWrapper>
-        <PerPageSelector />
+        <PerPageSelector perPage={data.meta.perPage} />
         Items per page
       </PerPageWrapper>
       <Table data={data.data} />

@@ -46,7 +46,7 @@ export function Pagination({
 }) {
   const prevPage = page - 1
   const nextPage = page + 1
-  const lowerLimit = (page - 1) * perPage
+  const lowerLimit = (page - 1) * perPage + 1
   const upperLimit = page * perPage < total ? page * perPage : total
   return (
     <Wrapper>
