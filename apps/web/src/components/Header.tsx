@@ -35,7 +35,7 @@ export function Header() {
     <Nav>
       <Inner>
         <Logo href="/">
-          <Image src="/icon.svg" alt="" width={20} height={20} />
+          <Image src="/scissors.svg" alt="" width={20} height={20} />
           snip
         </Logo>
       </Inner>
