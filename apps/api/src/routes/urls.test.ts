@@ -97,7 +97,7 @@ describe('GET /urls', () => {
     const res = await app.inject({ method: 'GET', url: '/urls?page=2&perPage=10' })
 
     expect(res.statusCode).toBe(200)
-    expect(parsePagination).toHaveBeenCalledWith({ page: '2', perPage: '10' })
+    expect(parsePagination).toHaveBeenCalledWith({ page: 2, perPage: 10 })
     expect(res.json().meta).toEqual({
       page: 1,
       perPage: 20,

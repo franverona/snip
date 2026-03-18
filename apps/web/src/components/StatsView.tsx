@@ -292,7 +292,7 @@ export function StatsView({ stats, slug }: Props) {
         </Card>
       )}
 
-      <BackLink href="/">← Shorten another URL</BackLink>
+      <BackLink href="/urls">← Back to list</BackLink>
     </div>
   )
 }

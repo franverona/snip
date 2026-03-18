@@ -13,6 +13,7 @@ import type {
   SlugParamSchema,
   MetaPaginationSchema,
   UrlListSchema,
+  UrlListRecordSchema,
 } from './schemas.js'
 
 export type CreateUrlInput = z.infer<typeof CreateUrlInputSchema>
@@ -25,3 +26,4 @@ export type HealthResponse = z.infer<typeof HealthResponseSchema>
 export type SlugParam = z.infer<typeof SlugParamSchema>
 export type MetaPagination = z.infer<typeof MetaPaginationSchema>
 export type UrlList = z.infer<typeof UrlListSchema>
+export type UrlListRecord = z.infer<typeof UrlListRecordSchema>
