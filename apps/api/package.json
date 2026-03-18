@@ -10,6 +10,7 @@
     "migrate": "drizzle-kit migrate",
     "migrate:generate": "drizzle-kit generate",
     "migrate:push": "drizzle-kit push",
+    "seed": "tsx src/db/seed.ts",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",

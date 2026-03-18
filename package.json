@@ -6,6 +6,7 @@
     "dev": "TURBO_TELEMETRY_DISABLED=1 turbo dev",
     "build": "TURBO_TELEMETRY_DISABLED=1 turbo build",
     "migrate": "TURBO_TELEMETRY_DISABLED=1 turbo migrate",
+    "seed": "TURBO_TELEMETRY_DISABLED=1 turbo seed",
     "lint": "TURBO_TELEMETRY_DISABLED=1 turbo lint",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

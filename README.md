@@ -80,7 +80,17 @@ pnpm --filter api run migrate:generate
 pnpm migrate
 ```
 
-### 5. Start development servers
+### 5. (Optional) Seed the database
+
+Populate the database with sample URLs and click data for local development:
+
+```bash
+pnpm seed
+```
+
+This inserts 40 URLs (including custom slugs, an expiring URL, and an already-expired URL) and 500 randomised clicks spread across the last 90 days. **It clears all existing data first.**
+
+### 6. Start development servers
 
 ```bash
 pnpm dev
@@ -98,6 +108,7 @@ pnpm dev
 | `pnpm dev`                               | Start all apps in watch mode                 |
 | `pnpm build`                             | Build all apps and packages                  |
 | `pnpm migrate`                           | Apply pending database migrations            |
+| `pnpm seed`                              | Seed the DB with sample URLs and clicks      |
 | `pnpm lint`                              | Lint all packages with ESLint                |
 | `pnpm format`                            | Format all files with Prettier               |
 | `pnpm format:check`                      | Check formatting without writing             |
