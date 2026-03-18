@@ -16,15 +16,15 @@ interface Props {
 async function getData(page: string, perPage: string) {
   const pageNumber = parseInt(page, 10)
   const perPageNumber = parseInt(perPage, 10)
-  const parsedPerPage = Math.min(perPageNumber ?? 20, 100)
+  const parsedPerPage = Math.min(perPageNumber ?? 25, 50)
   const parsedPage = pageNumber ?? 1
-  const validPerPage = isNaN(parsedPerPage) || parsedPerPage < 1 ? 20 : parsedPerPage
+  const validPerPage = isNaN(parsedPerPage) || parsedPerPage < 1 ? 25 : parsedPerPage
   const validPage = isNaN(parsedPage) || parsedPage < 1 ? 1 : parsedPage
-  return await api.getUrls(validPage, validPerPage)
+  return await api.getUrls(validPage, ![10, 25, 50].includes(validPerPage) ? 25 : validPerPage)
 }
 
 export default async function Page({ searchParams }: Props) {
-  const { page = '1', perPage = '20' } = await searchParams
+  const { page = '1', perPage = '25' } = await searchParams
 
   const data = await getData(page, perPage)
 

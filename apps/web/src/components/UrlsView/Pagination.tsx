@@ -46,10 +46,12 @@ export function Pagination({
 }) {
   const prevPage = page - 1
   const nextPage = page + 1
+  const lowerLimit = (page - 1) * perPage
+  const upperLimit = page * perPage < total ? page * perPage : total
   return (
     <Wrapper>
       <TotalResults>
-        {total} {total === 1 ? 'URL' : 'URLs'}
+        {lowerLimit} - {upperLimit} of {total} URLs
       </TotalResults>
       <ActionsWrapper>
         {prevPage < 1 ? (
