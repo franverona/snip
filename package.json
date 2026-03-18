@@ -9,6 +9,7 @@
     "lint": "TURBO_TELEMETRY_DISABLED=1 turbo lint",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "test:api": "pnpm --filter api run test",
     "prepare": "husky"
   },
   "devDependencies": {
