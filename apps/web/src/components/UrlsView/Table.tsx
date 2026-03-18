@@ -1,4 +1,5 @@
 import { type UrlListRecord } from '@snip/types'
+import Link from 'next/link'
 import styled from 'styled-components'
 
 const Wrapper = styled.div`
@@ -65,6 +66,23 @@ const OriginalUrl = styled.div`
   }
 `
 
+const CardActions = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-top: 1rem;
+`
+
+const ViewStatsLink = styled(Link)`
+  display: block;
+  font-size: 0.875rem;
+  color: #6b7688;
+
+  &:hover {
+    text-decoration: underline;
+  }
+`
+
 function UrlCard({ url }: { url: UrlListRecord }) {
   const isExpired = url.expiresAt ? new Date(url.expiresAt) < new Date() : false
   const expiresAtFormatted = url.expiresAt
@@ -112,6 +130,9 @@ function UrlCard({ url }: { url: UrlListRecord }) {
           {url.originalUrl}
         </a>
       </OriginalUrl>
+      <CardActions>
+        <ViewStatsLink href={`/stats/${url.slug}`}>View stats →</ViewStatsLink>
+      </CardActions>
     </Card>
   )
 }
