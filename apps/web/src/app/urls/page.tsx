@@ -1,4 +1,4 @@
-import UrlsView from '@/components/UrlsView'
+import { UrlsView } from '@/components/UrlsView'
 import { api } from '@/lib/api'
 
 interface Props {

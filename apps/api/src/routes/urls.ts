@@ -27,8 +27,14 @@ export async function urlRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       const { page, perPage, offset } = parsePagination(request.query)
-      const urls = await getUrlList(page, perPage, offset)
-      return reply.send(urls)
+      const { data, meta } = await getUrlList(page, perPage, offset)
+      return reply.send({
+        data: data.map((url) => ({
+          ...url,
+          shortUrl: `${env.BASE_URL}/${url.slug}`,
+        })),
+        meta,
+      })
     },
   )
 

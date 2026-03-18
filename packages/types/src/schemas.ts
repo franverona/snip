@@ -79,7 +79,11 @@ export const MetaPaginationSchema = z.object({
   totalPages: z.number().int().nonnegative(),
 })
 
+export const UrlListRecordSchema = UrlRecordSchema.extend({
+  shortUrl: urlSchema,
+})
+
 export const UrlListSchema = z.object({
-  data: z.array(UrlRecordSchema),
+  data: z.array(UrlListRecordSchema),
   meta: MetaPaginationSchema,
 })
