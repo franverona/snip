@@ -30,6 +30,7 @@ Guidelines for Claude Code when working in this repository.
 - Schema is defined in `apps/api/src/db/schema.ts` using Drizzle ORM.
 - After changing the schema, run `pnpm --filter api run migrate:generate` then `pnpm migrate`.
 - Never write raw SQL — use Drizzle's query builder.
+- To populate the database with sample data for local development, run `pnpm seed`. The seed script is at `apps/api/src/db/seed.ts` — it **deletes all existing data** before inserting 40 URLs and 500 randomised clicks.
 - If `pnpm migrate` fails with `ECONNREFUSED`, the Docker container may need to be recreated: `docker compose down && docker compose up -d`.
 - Pool is configured in `apps/api/src/db/client.ts`. `DATABASE_POOL_MAX` (default: 10) is the only tunable env var — `idleTimeoutMillis` (30s) and `connectionTimeoutMillis` (5s) are hardcoded. Do not add more pool env vars without good reason.
 
@@ -86,4 +87,5 @@ pnpm --filter api run test                  # run API unit tests (no DB required
 pnpm --filter api run test:watch            # run API tests in watch mode
 pnpm --filter api run migrate:generate      # generate migrations after schema change
 pnpm migrate                                # apply migrations
+pnpm seed                                   # seed DB with sample URLs and clicks (clears existing data)
 ```
