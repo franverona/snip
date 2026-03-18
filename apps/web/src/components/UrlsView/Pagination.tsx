@@ -1,3 +1,5 @@
+'use client'
+
 import Link from 'next/link'
 import styled from 'styled-components'
 
@@ -16,8 +18,6 @@ const ActionsWrapper = styled.div`
   align-items: center;
   gap: 1rem;
 `
-
-const PageLink = styled(Link)``
 
 const PageLinkDisabled = styled.div`
   cursor: default;
@@ -57,9 +57,12 @@ export function Pagination({
             Previous
           </PageLinkDisabled>
         ) : (
-          <PageLink aria-disabled={prevPage < 1} href={`?page=${prevPage}&perPage=${perPage}`}>
+          <Link
+            href={`?page=${prevPage}&perPage=${perPage}`}
+            onClick={() => window.scrollTo({ top: 0 })}
+          >
             Previous
-          </PageLink>
+          </Link>
         )}
         <CurrentPage>Page {page}</CurrentPage>
         {nextPage > totalPages ? (
@@ -67,7 +70,12 @@ export function Pagination({
             Next
           </PageLinkDisabled>
         ) : (
-          <PageLink href={`?page=${nextPage}&perPage=${perPage}`}>Next</PageLink>
+          <Link
+            href={`?page=${nextPage}&perPage=${perPage}`}
+            onClick={() => window.scrollTo({ top: 0 })}
+          >
+            Next
+          </Link>
         )}
       </ActionsWrapper>
     </Wrapper>
