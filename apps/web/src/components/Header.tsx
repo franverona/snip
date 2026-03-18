@@ -3,6 +3,7 @@
 import styled from 'styled-components'
 import Link from 'next/link'
 import Image from 'next/image'
+import { usePathname } from 'next/navigation'
 
 const Nav = styled.header`
   border-bottom: 1px solid #e5e7eb;
@@ -38,20 +39,32 @@ const Menu = styled.div`
   align-items: center;
 `
 
-const MenuItem = styled(Link)`
-  padding: 0.625rem 0.825rem;
+const MenuItem = styled(Link)<{ $active: boolean }>`
+  padding: 0.5rem 0.825rem;
   font-size: 0.875rem;
-  font-weight: 500;
-  color: #4f5969;
+  font-weight: 600;
+  color: ${({ $active }) => ($active ? '#2563eb' : '#6b7688')};
   border-radius: 4px;
 
   &:hover {
-    color: #21252c;
-    background-color: #f9fafb;
+    color: #2563eb;
+    background-color: #f6f8fe;
   }
 `
 
+const links = [
+  {
+    label: 'URLs',
+    href: '/urls',
+  },
+  {
+    label: 'Shorten a URL',
+    href: '/new',
+  },
+]
+
 export function Header() {
+  const pathname = usePathname()
   return (
     <Nav>
       <Inner>
@@ -60,8 +73,11 @@ export function Header() {
           snip
         </Logo>
         <Menu>
-          <MenuItem href="/urls">URLs</MenuItem>
-          <MenuItem href="/new">Shorten a URL</MenuItem>
+          {links.map(({ label, href }) => (
+            <MenuItem key={href} $active={pathname === href} href={href}>
+              {label}
+            </MenuItem>
+          ))}
         </Menu>
       </Inner>
     </Nav>
