@@ -21,7 +21,7 @@ export const clicks = pgTable(
     userAgent: text('user_agent'),
     referer: text('referer'),
   },
-  (t) => [index('clicks_url_id_idx').on(t.urlId)],
+  (t) => [index('clicks_url_id_clicked_at_idx').on(t.urlId, t.clickedAt)],
 )
 
 export type Url = typeof urls.$inferSelect
