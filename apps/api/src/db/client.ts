@@ -8,6 +8,8 @@ const pool = new Pool({
   max: env.DATABASE_POOL_MAX,
   idleTimeoutMillis: 30_000,
   connectionTimeoutMillis: 5_000,
+  // Kill any query that takes longer than 10 s
+  options: '--statement_timeout=10000',
 })
 
 export const db = drizzle(pool, { schema })
