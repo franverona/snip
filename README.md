@@ -26,7 +26,7 @@ A self-hosted URL shortener that turns long, unwieldy links into clean and share
 | ------------ | ------------------------------------------------------- |
 | Monorepo     | Turborepo + pnpm workspaces                             |
 | Backend      | Fastify, Drizzle ORM, PostgreSQL                        |
-| Frontend     | Next.js 15 (App Router), styled-components              |
+| Frontend     | Next.js 16 (App Router), styled-components              |
 | Shared types | Zod schemas + inferred TypeScript types (`@snip/types`) |
 | Database     | PostgreSQL via Docker                                   |
 
