@@ -155,11 +155,11 @@ const BackLink = styled.a`
 const ExpiredBanner = styled.div`
   background-color: #fff3e0;
   border: 1px solid #ed6c02;
-  border-radius: 0.5rem;
+  border-radius: 6px;
   color: #b45309;
-  padding: 0.75rem 1rem;
-  font-size: 0.875rem;
-  margin-bottom: 1.5rem;
+  padding: 0.625rem 0.875rem;
+  font-size: 0.8125rem;
+  margin-bottom: 0.75rem;
 `
 
 // ---- Component ----

@@ -1,6 +1,14 @@
-# snip
+<div align="center">
 
-A self-hosted URL shortener that turns long, unwieldy links into clean, shareable slugs and tracks how they perform over time.
+<img src="./screenshots/logo.svg" alt="Snip logo" width="120" />
+
+<h3>Snip</h3>
+
+[![CI](https://github.com/franverona/snip/actions/workflows/ci.yml/badge.svg)](https://github.com/franverona/snip/actions/workflows/ci.yml)
+
+A self-hosted URL shortener that turns long, unwieldy links into clean and shareable slugs.
+
+</div>
 
 ## Stack
 
@@ -12,16 +20,19 @@ A self-hosted URL shortener that turns long, unwieldy links into clean, shareabl
 | Shared types | Zod schemas + inferred TypeScript types (`@snip/types`) |
 | Database     | PostgreSQL via Docker                                   |
 
-## Project structure
+## Screenshots
 
-```
-apps/
-  api/      Fastify REST API
-  web/      Next.js frontend
-packages/
-  types/    Shared Zod schemas and TypeScript types
-  tsconfig/ Shared TypeScript base configs
-```
+### URLs list
+
+<img src="./screenshots/urls-list.png" alt="URLs list" />
+
+### URL stats view
+
+<img src="./screenshots/url-stats.png" alt="URL stats view" />
+
+### Create URL
+
+<img src="./screenshots/create-url.png" alt="Create URL view" />
 
 ## Getting started
 
@@ -138,35 +149,6 @@ pnpm dev
 ```
 
 `customSlug` and `expiresAt` are optional.
-
-## Commit conventions
-
-This project follows [Conventional Commits](https://www.conventionalcommits.org/). The format is enforced by commitlint on every commit via a Husky hook.
-
-```
-<type>(<scope>): <description>
-```
-
-Allowed types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`, `revert`, `ci`, `build`.
-
-```bash
-feat(api): add custom slug validation
-fix(web): resolve hydration mismatch on stats page
-chore(deps): bump drizzle-orm to 0.40.0
-```
-
-## CI
-
-GitHub Actions runs four jobs on every push and pull request to `main`:
-
-| Job         | What it does                                                      |
-| ----------- | ----------------------------------------------------------------- |
-| `lint`      | ESLint + Prettier format check across all packages                |
-| `typecheck` | `tsc --noEmit` across all packages via Turborepo                  |
-| `test`      | API unit tests via Vitest (no database required, all deps mocked) |
-| `build`     | Full production build (runs after lint, typecheck, and test pass) |
-
-Dependabot is configured to open weekly PRs for npm and GitHub Actions updates, grouped by ecosystem (turbo, drizzle, nextjs, fastify, typescript).
 
 ## Database schema
 
