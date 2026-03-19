@@ -26,7 +26,7 @@ A self-hosted URL shortener that turns long, unwieldy links into clean and share
 | ------------ | ------------------------------------------------------- |
 | Monorepo     | Turborepo + pnpm workspaces                             |
 | Backend      | Fastify, Drizzle ORM, PostgreSQL                        |
-| Frontend     | Next.js 15 (App Router), styled-components              |
+| Frontend     | Next.js 16 (App Router), styled-components              |
 | Shared types | Zod schemas + inferred TypeScript types (`@snip/types`) |
 | Database     | PostgreSQL via Docker                                   |
 
@@ -112,7 +112,15 @@ pnpm seed
 
 This inserts 40 URLs (including custom slugs, an expiring URL, and an already-expired URL) and 500 randomised clicks spread across the last 90 days. **It clears all existing data first.**
 
-### 6. Start development servers
+### 6. Build shared packages
+
+```bash
+pnpm build
+```
+
+This compiles `@snip/types` (and other packages) to `dist/`. Required once after a fresh clone — `pnpm dev` relies on the compiled output.
+
+### 7. Start development servers
 
 ```bash
 pnpm dev
