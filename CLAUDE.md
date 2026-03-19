@@ -24,6 +24,8 @@ Guidelines for Claude Code when working in this repository.
 - The redirect route (`/:slug`) must remain registered last in `apps/api/src/index.ts` to avoid shadowing other routes.
 - Rate limiting uses `@fastify/rate-limit` with a global fallback registered in `index.ts`. Only `POST /urls` has a per-route override driven by `RATE_LIMIT_CREATE_PER_MINUTE` (default: 10 req/min). Other routes inherit the global limit. Do not add more env vars for per-route limits without good reason.
 - CORS is restricted to a single origin via `@fastify/cors`. The allowed origin is `CORS_ORIGIN` if set, falling back to `BASE_URL`. In production, `CORS_ORIGIN` must be set to the web app's origin (e.g. `https://snip.example.com`) — `BASE_URL` is the API's own URL and is not a safe CORS fallback in production.
+- Visitor IPs are hashed with HMAC-SHA-256 keyed by `IP_HASH_SECRET` (required, no default — startup fails fast if missing). Changing this secret invalidates all existing stored hashes and resets unique-visitor deduplication.
+- When adding a new required env var to `config.ts`, also add a stub value in `apps/api/vitest.config.ts` so `config.ts` doesn't throw at import time in tests.
 
 ## Database
 

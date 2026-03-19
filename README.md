@@ -72,6 +72,7 @@ PORT=3001
 BASE_URL=http://localhost:3001
 RATE_LIMIT_CREATE_PER_MINUTE=10
 CORS_ORIGIN=http://localhost:3000
+IP_HASH_SECRET=your-hash-secret
 ```
 
 `apps/web/.env.local`:
@@ -165,11 +166,11 @@ pnpm dev
 
 **clicks**
 
-| Column       | Type      | Notes                         |
-| ------------ | --------- | ----------------------------- |
-| `id`         | uuid      | Primary key                   |
-| `url_id`     | uuid      | FK → urls.id (cascade delete) |
-| `clicked_at` | timestamp | Default now                   |
-| `ip_hash`    | text      | SHA-256 hash of IP, nullable  |
-| `user_agent` | text      | Nullable                      |
-| `referer`    | text      | Nullable                      |
+| Column       | Type      | Notes                             |
+| ------------ | --------- | --------------------------------- |
+| `id`         | uuid      | Primary key                       |
+| `url_id`     | uuid      | FK → urls.id (cascade delete)     |
+| `clicked_at` | timestamp | Default now                       |
+| `ip_hash`    | text      | HMAC-SHA-256 hash of IP, nullable |
+| `user_agent` | text      | Nullable                          |
+| `referer`    | text      | Nullable                          |
