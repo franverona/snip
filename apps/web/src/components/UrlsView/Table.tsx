@@ -183,7 +183,13 @@ function UrlCard({ url }: { url: UrlListRecord }) {
         <ExpiredBanner>Expired {expiresAtFormatted} — now returns 410 Gone.</ExpiredBanner>
       )}
 
-      <ShortLink href={url.shortUrl} title={url.shortUrl} target="_blank" rel="noopener noreferrer">
+      <ShortLink
+        href={url.shortUrl}
+        title={url.shortUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label={`Open ${url.shortUrl}`}
+      >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="14"
@@ -218,7 +224,13 @@ function UrlCard({ url }: { url: UrlListRecord }) {
           <path d="M5 12h14" />
           <path d="m12 5 7 7-7 7" />
         </svg>
-        <a href={url.originalUrl} title={url.originalUrl} target="_blank" rel="noopener noreferrer">
+        <a
+          href={url.originalUrl}
+          title={url.originalUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={`Open ${url.originalUrl}`}
+        >
           {url.originalUrl}
         </a>
       </Destination>

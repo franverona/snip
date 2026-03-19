@@ -141,8 +141,11 @@ function Toast({
     return () => clearTimeout(timer)
   }, [onClose])
 
+  const role = type === 'error' ? 'alert' : 'status'
+  const ariaLive = type === 'error' ? 'assertive' : 'polite'
+
   return (
-    <Wrapper $type={type}>
+    <Wrapper $type={type} role={role} aria-live={ariaLive}>
       <Icon type={type} />
       <Message>{message}</Message>
       <CloseButton onClick={onClose}>

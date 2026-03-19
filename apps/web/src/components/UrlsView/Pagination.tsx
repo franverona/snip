@@ -50,7 +50,7 @@ const PageButton = styled(Link)`
   }
 `
 
-const PageButtonDisabled = styled.div`
+const PageButtonDisabled = styled.button`
   ${pageButtonBase}
   color: #d1d5db;
   background: #f9fafb;
@@ -86,26 +86,28 @@ export function Pagination({
       </TotalResults>
       <ActionsWrapper>
         {prevPage < 1 ? (
-          <PageButtonDisabled role="button" aria-disabled>
+          <PageButtonDisabled disabled aria-disabled aria-label="Previous page">
             ← Prev
           </PageButtonDisabled>
         ) : (
           <PageButton
             href={`?page=${prevPage}&perPage=${perPage}`}
             onClick={() => window.scrollTo({ top: 0 })}
+            aria-label="Previous page"
           >
             ← Prev
           </PageButton>
         )}
         <CurrentPage>Page {page}</CurrentPage>
         {nextPage > totalPages ? (
-          <PageButtonDisabled role="button" aria-disabled>
+          <PageButtonDisabled disabled aria-disabled aria-label="Next page">
             Next →
           </PageButtonDisabled>
         ) : (
           <PageButton
             href={`?page=${nextPage}&perPage=${perPage}`}
             onClick={() => window.scrollTo({ top: 0 })}
+            aria-label="Next page"
           >
             Next →
           </PageButton>
