@@ -21,14 +21,20 @@ await fastify.register(urlRoutes)
 // Redirect must be last (wildcard /:slug)
 await fastify.register(redirectRoutes)
 
-const shutdown = async () => {
-  try {
-    await fastify.close()
-    process.exit(0)
-  } catch (err) {
-    fastify.log.error(err)
+const SHUTDOWN_TIMEOUT_MS = 10_000
+
+async function shutdown(signal: string) {
+  fastify.log.info({ signal }, 'shutdown signal received')
+
+  const timer = setTimeout(() => {
+    fastify.log.warn('graceful shutdown timed out — forcing exit')
     process.exit(1)
-  }
+  }, SHUTDOWN_TIMEOUT_MS)
+  timer.unref()
+
+  await fastify.close()
+  clearTimeout(timer)
+  process.exit(0)
 }
 
 process.on('SIGTERM', shutdown)
