@@ -10,6 +10,16 @@ A self-hosted URL shortener that turns long, unwieldy links into clean and share
 
 </div>
 
+## Table of contents
+
+- [Stack](#stack)
+- [Screenshots](#screenshots)
+- [Getting started](#getting-started)
+- [Scripts](#scripts)
+- [Environment variables](#environment-variables)
+- [API reference](#api-reference)
+- [Database schema](#database-schema)
+
 ## Stack
 
 | Layer        | Technology                                              |
@@ -128,6 +138,27 @@ pnpm dev
 | `pnpm --filter api run test`             | Run API unit tests (no DB required)          |
 | `pnpm --filter api run test:watch`       | Run API tests in watch mode                  |
 | `pnpm --filter api run migrate:generate` | Generate migration files from schema changes |
+
+## Environment variables
+
+### API (`apps/api`)
+
+| Variable                       | Required | Default                 | Description                                                                                                                       |
+| ------------------------------ | -------- | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `DATABASE_URL`                 | **Yes**  | —                       | PostgreSQL connection string                                                                                                      |
+| `IP_HASH_SECRET`               | **Yes**  | —                       | HMAC-SHA-256 secret for hashing visitor IPs. Changing it invalidates all stored hashes and resets unique-visitor deduplication    |
+| `PORT`                         | No       | `3001`                  | Port the API server listens on                                                                                                    |
+| `BASE_URL`                     | No       | `http://localhost:3001` | Public URL of the API. Used as the CORS allowed origin fallback when `CORS_ORIGIN` is not set                                     |
+| `CORS_ORIGIN`                  | No       | `BASE_URL`              | Allowed CORS origin. In production, set this to the web app's origin — `BASE_URL` is the API's own URL and is not a safe fallback |
+| `RATE_LIMIT_CREATE_PER_MINUTE` | No       | `10`                    | Max requests per minute for `POST /urls`                                                                                          |
+| `DATABASE_POOL_MAX`            | No       | `10`                    | Maximum number of connections in the database pool                                                                                |
+
+### Web (`apps/web`)
+
+| Variable                  | Required | Default                 | Description                               |
+| ------------------------- | -------- | ----------------------- | ----------------------------------------- |
+| `NEXT_PUBLIC_API_URL`     | No       | `http://localhost:3001` | API base URL, accessible from the browser |
+| `NEXT_TELEMETRY_DISABLED` | No       | `1`                     | Set to `1` to disable Next.js telemetry   |
 
 ## API reference
 
