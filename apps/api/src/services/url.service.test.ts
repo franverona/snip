@@ -109,6 +109,31 @@ describe('createUrl', () => {
     ).rejects.toThrow('PRIVATE_ADDRESS')
   })
 
+  it('throws PRIVATE_ADDRESS when URL is a private IP address', async () => {
+    vi.mocked(ipaddr.parse).mockReturnValue({ range: () => 'private' } as ReturnType<
+      typeof ipaddr.parse
+    >)
+    await expect(createUrl({ originalUrl: 'https://192.168.1.1/test' }, BASE_URL)).rejects.toThrow(
+      'PRIVATE_ADDRESS',
+    )
+  })
+
+  it('skips DNS and accepts a public IP address literal', async () => {
+    // ipaddr mock already returns 'unicast' by default in beforeEach
+    mockInsertReturning.mockResolvedValue([mockUrlRow])
+    await createUrl({ originalUrl: 'https://1.2.3.4/test' }, BASE_URL)
+    expect(dns.resolve4).not.toHaveBeenCalled()
+  })
+
+  it('throws PRIVATE_ADDRESS when URL is an IPv6 loopback address', async () => {
+    vi.mocked(ipaddr.parse).mockReturnValue({ range: () => 'loopback' } as ReturnType<
+      typeof ipaddr.parse
+    >)
+    await expect(createUrl({ originalUrl: 'http://[::1]/test' }, BASE_URL)).rejects.toThrow(
+      'PRIVATE_ADDRESS',
+    )
+  })
+
   it('throws SLUG_TAKEN when custom slug is already in use', async () => {
     mockFindFirstUrl.mockResolvedValue(mockUrlRow)
     await expect(

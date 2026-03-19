@@ -5,6 +5,7 @@ import { db } from '../db/client.js'
 import { urls, clicks, type Url, type Click } from '../db/schema.js'
 import type { CreateUrlInput, UrlStats, ClickRecord, UrlRecord } from '@snip/types'
 import dns from 'node:dns/promises'
+import net from 'node:net'
 import { totalPages } from '../lib/pagination.js'
 
 function toUrlRecord(url: Url): UrlRecord {
@@ -45,11 +46,15 @@ export async function createUrl(input: CreateUrlInput, baseUrl: string) {
     throw new Error('REDIRECT_LOOP')
   }
 
-  let addresses: string[]
-  try {
-    addresses = await dns.resolve4(hostname)
-  } catch {
-    throw new Error('UNRESOLVED_DNS')
+  let addresses: string[] = []
+  if (net.isIP(hostname) !== 0) {
+    addresses.push(hostname)
+  } else {
+    try {
+      addresses = await dns.resolve4(hostname)
+    } catch {
+      throw new Error('UNRESOLVED_DNS')
+    }
   }
 
   const isPrivate = addresses.some((ip) => ipaddr.parse(ip).range() !== 'unicast')
