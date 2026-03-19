@@ -2,7 +2,7 @@
 
 import styled from 'styled-components'
 import type { UrlStats } from '@snip/types'
-import { Button } from './ui'
+import { Button, useConfirmDialog } from './ui'
 import { api } from '@/lib/api'
 import { useRouter } from 'next/navigation'
 import { useToast } from './Toast'
@@ -172,6 +172,7 @@ interface Props {
 export function StatsView({ stats, slug }: Props) {
   const router = useRouter()
   const { showToast } = useToast()
+  const { openConfirmDialog, confirmDialog } = useConfirmDialog()
 
   const { url, totalClicks, clicksLast24h, clicksLast7d } = stats
   const maxClicks = Math.max(totalClicks, 1)
@@ -180,17 +181,22 @@ export function StatsView({ stats, slug }: Props) {
     return Math.round((v / maxClicks) * 100)
   }
 
-  const handleDelete = async () => {
-    if (window.confirm('After removing this URL, it will no longer be available.')) {
-      try {
-        await api.deleteUrl(slug)
-        showToast('URL removed', 'success')
-        router.replace('/')
-      } catch (err) {
-        console.error(err)
-        showToast('An error ocurred when deleting the URL.', 'error')
-      }
-    }
+  const handleDelete = () => {
+    openConfirmDialog({
+      title: `Delete /${slug}?`,
+      message: 'After removing this URL, it will no longer be available.',
+      confirmLabel: 'Delete',
+      onConfirm: async () => {
+        try {
+          await api.deleteUrl(slug)
+          showToast('URL removed', 'success')
+          router.replace('/')
+        } catch (err) {
+          console.error(err)
+          showToast('An error ocurred when deleting the URL.', 'error')
+        }
+      },
+    })
   }
 
   const isExpired = url.expiresAt ? new Date(url.expiresAt) < new Date() : false
@@ -200,6 +206,7 @@ export function StatsView({ stats, slug }: Props) {
 
   return (
     <div>
+      {confirmDialog}
       <PageHeader>
         <PageTitle>
           Stats for <span>/{slug}</span>
