@@ -1,6 +1,7 @@
 import type { FastifyInstance } from 'fastify'
 import { findUrlBySlug, recordClick } from '../services/url.service.js'
-import { createHash } from 'crypto'
+import { createHmac } from 'node:crypto'
+import { env } from '../config.js'
 
 export async function redirectRoutes(fastify: FastifyInstance) {
   // GET /:slug — redirect
@@ -24,7 +25,9 @@ export async function redirectRoutes(fastify: FastifyInstance) {
 
     // Fire-and-forget click recording
     const ip = request.ip
-    const ipHash = ip ? createHash('sha256').update(ip).digest('hex') : undefined
+    const ipHash = ip
+      ? createHmac('sha256', env.IP_HASH_SECRET).update(ip).digest('hex')
+      : undefined
 
     setImmediate(() => {
       recordClick(url.id, {
