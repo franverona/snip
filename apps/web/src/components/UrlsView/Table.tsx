@@ -18,7 +18,6 @@ const Card = styled.div`
   border: 1px solid #e5e7eb;
   border-left: 3px solid #2563eb;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-  padding: 1rem 1.25rem;
   transition:
     box-shadow 0.15s ease,
     border-color 0.15s ease;
@@ -32,20 +31,20 @@ const Card = styled.div`
 
 const CardHeader = styled.div`
   display: flex;
-  align-items: center;
+  flex-direction: column;
   justify-content: space-between;
-  margin-bottom: 0.875rem;
   gap: 1rem;
-`
+  padding: 1rem 1.25rem;
 
-const SlugRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  min-width: 0;
+  @media (min-width: 480px) {
+    flex-direction: row;
+    align-items: center;
+  }
 `
 
 const SlugBadge = styled.div`
+  display: inline-flex;
+  align-self: flex-start;
   font-size: 0.75rem;
   font-weight: 600;
   color: #2563eb;
@@ -82,13 +81,23 @@ const ExpiredBanner = styled.div`
   color: #b45309;
   padding: 0.625rem 0.875rem;
   font-size: 0.8125rem;
-  margin-bottom: 0.75rem;
+  margin: 1rem 1.25rem 1.25rem;
 `
 
 const CardDetails = styled.div`
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 1rem;
+  padding: 1rem 1.25rem;
+
+  @media (min-width: 480px) {
+    flex-direction: row;
+    align-items: center;
+  }
+`
+
+const QRCode = styled(QRCodeCanvas)`
+  margin: 0 auto;
 `
 
 const CardUrls = styled.div`
@@ -147,10 +156,16 @@ const Destination = styled.div`
 const CardFooter = styled.div`
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
   margin-top: 0.875rem;
   padding-top: 0.75rem;
   border-top: 1px solid #f3f4f6;
+  padding: 1rem 1.25rem;
+`
+
+const CardActions = styled.div`
+  flex: 1;
+  text-align: right;
 `
 
 const ViewStatsLink = styled(Link)`
@@ -183,10 +198,7 @@ function UrlCard({ url }: { url: UrlListRecord }) {
   return (
     <Card>
       <CardHeader>
-        <SlugRow>
-          <SlugBadge>/{url.slug}</SlugBadge>
-          {url.customSlug && <CustomBadge>custom</CustomBadge>}
-        </SlugRow>
+        <SlugBadge>/{url.slug}</SlugBadge>
         <Dates>
           {url.expiresAt && !isExpired && <>Expires {expiresAtFormatted} · </>}
           {new Date(url.createdAt).toLocaleDateString('en-US', { dateStyle: 'medium' })}
@@ -198,7 +210,7 @@ function UrlCard({ url }: { url: UrlListRecord }) {
       )}
 
       <CardDetails>
-        <QRCodeCanvas size={100} title={url.shortUrl} value={url.shortUrl} />
+        <QRCode size={100} title={url.shortUrl} value={url.shortUrl} />
         <CardUrls>
           <ShortLink
             href={url.shortUrl}
@@ -255,24 +267,27 @@ function UrlCard({ url }: { url: UrlListRecord }) {
       </CardDetails>
 
       <CardFooter>
-        <ViewStatsLink href={`/stats/${url.slug}`}>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="12"
-            height="12"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <line x1="18" y1="20" x2="18" y2="10" />
-            <line x1="12" y1="20" x2="12" y2="4" />
-            <line x1="6" y1="20" x2="6" y2="14" />
-          </svg>
-          View stats
-        </ViewStatsLink>
+        {url.customSlug && <CustomBadge>custom</CustomBadge>}
+        <CardActions>
+          <ViewStatsLink href={`/stats/${url.slug}`}>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <line x1="18" y1="20" x2="18" y2="10" />
+              <line x1="12" y1="20" x2="12" y2="4" />
+              <line x1="6" y1="20" x2="6" y2="14" />
+            </svg>
+            View stats
+          </ViewStatsLink>
+        </CardActions>
       </CardFooter>
     </Card>
   )

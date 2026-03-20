@@ -72,6 +72,16 @@ const DetailsCard = styled.div`
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 `
 
+const QRCode = styled(QRCodeSVG)`
+  width: 100%;
+  height: auto;
+  margin: 1rem 0;
+
+  @media (min-width: 480px) {
+    margin: 0.25rem 0;
+  }
+`
+
 const DownloadButton = styled.button`
   margin-top: 0.5rem;
   width: 100%;
@@ -280,7 +290,7 @@ export function StatsView({ stats, slug }: Props) {
       <DetailsGrid>
         <DetailsCard>
           <CardLabel>QR Code</CardLabel>
-          <QRCodeSVG height={100} width={100} title={url.shortUrl} value={url.shortUrl} />
+          <QRCode title={url.shortUrl} value={url.shortUrl} />
           <QRCodeCanvas
             ref={qrCanvasRef}
             height={256}
