@@ -85,7 +85,7 @@ export async function urlRoutes(fastify: FastifyInstance) {
   // GET /urls/:slug/stats
   fastify.get<{ Params: { slug: string } }>('/urls/:slug/stats', async (request, reply) => {
     const { slug } = request.params
-    const stats = await getUrlStats(slug)
+    const stats = await getUrlStats(slug, env.BASE_URL)
     if (!stats) {
       return reply.status(404).send({ error: 'URL not found' })
     }

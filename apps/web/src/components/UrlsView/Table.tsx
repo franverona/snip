@@ -1,5 +1,8 @@
+'use client'
+
 import { type UrlListRecord } from '@snip/types'
 import Link from 'next/link'
+import { QRCodeCanvas } from 'qrcode.react'
 import styled from 'styled-components'
 
 const Wrapper = styled.div`
@@ -82,9 +85,19 @@ const ExpiredBanner = styled.div`
   margin-bottom: 0.75rem;
 `
 
+const CardDetails = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+`
+
+const CardUrls = styled.div`
+  flex: 1;
+  min-width: 0;
+`
+
 const ShortLink = styled.a`
   display: inline-flex;
-  align-items: center;
   gap: 0.375rem;
   color: #111827;
   font-weight: 600;
@@ -96,6 +109,7 @@ const ShortLink = styled.a`
     color: #9ca3af;
     flex-shrink: 0;
     transition: color 0.1s ease;
+    margin-top: 0.1rem;
   }
 
   &:hover {
@@ -183,57 +197,62 @@ function UrlCard({ url }: { url: UrlListRecord }) {
         <ExpiredBanner>Expired {expiresAtFormatted} — now returns 410 Gone.</ExpiredBanner>
       )}
 
-      <ShortLink
-        href={url.shortUrl}
-        title={url.shortUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label={`Open ${url.shortUrl}`}
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="14"
-          height="14"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M15 3h6v6" />
-          <path d="M10 14 21 3" />
-          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-        </svg>
-        {url.shortUrl}
-      </ShortLink>
+      <CardDetails>
+        <QRCodeCanvas size={100} title={url.shortUrl} value={url.shortUrl} />
+        <CardUrls>
+          <ShortLink
+            href={url.shortUrl}
+            title={url.shortUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`Open ${url.shortUrl}`}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M15 3h6v6" />
+              <path d="M10 14 21 3" />
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+            </svg>
+            {url.shortUrl}
+          </ShortLink>
 
-      <Destination>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="12"
-          height="12"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          style={{ flexShrink: 0 }}
-        >
-          <path d="M5 12h14" />
-          <path d="m12 5 7 7-7 7" />
-        </svg>
-        <a
-          href={url.originalUrl}
-          title={url.originalUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label={`Open ${url.originalUrl}`}
-        >
-          {url.originalUrl}
-        </a>
-      </Destination>
+          <Destination>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              style={{ flexShrink: 0 }}
+            >
+              <path d="M5 12h14" />
+              <path d="m12 5 7 7-7 7" />
+            </svg>
+            <a
+              href={url.originalUrl}
+              title={url.originalUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`Open ${url.originalUrl}`}
+            >
+              {url.originalUrl}
+            </a>
+          </Destination>
+        </CardUrls>
+      </CardDetails>
 
       <CardFooter>
         <ViewStatsLink href={`/stats/${url.slug}`}>

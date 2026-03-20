@@ -52,8 +52,24 @@ export const ClickRecordSchema = z.object({
   referer: z.string().nullable(),
 })
 
+export const UrlListRecordSchema = UrlRecordSchema.extend({
+  shortUrl: urlSchema,
+})
+
+export const MetaPaginationSchema = z.object({
+  total: z.number().int().nonnegative(),
+  page: z.number().int().nonnegative(),
+  perPage: z.number().int().nonnegative(),
+  totalPages: z.number().int().nonnegative(),
+})
+
+export const UrlListSchema = z.object({
+  data: z.array(UrlListRecordSchema),
+  meta: MetaPaginationSchema,
+})
+
 export const UrlStatsSchema = z.object({
-  url: UrlRecordSchema,
+  url: UrlListRecordSchema,
   totalClicks: z.number().int().nonnegative(),
   clicksByDay: z.array(z.object({ date: z.string(), count: z.number() })),
   clicksLast24h: z.number().int().nonnegative(),
@@ -70,20 +86,4 @@ export const HealthResponseSchema = z.object({
   status: z.enum(['ok', 'error']),
   db: z.enum(['ok', 'error']),
   timestamp: z.iso.datetime(),
-})
-
-export const MetaPaginationSchema = z.object({
-  total: z.number().int().nonnegative(),
-  page: z.number().int().nonnegative(),
-  perPage: z.number().int().nonnegative(),
-  totalPages: z.number().int().nonnegative(),
-})
-
-export const UrlListRecordSchema = UrlRecordSchema.extend({
-  shortUrl: urlSchema,
-})
-
-export const UrlListSchema = z.object({
-  data: z.array(UrlListRecordSchema),
-  meta: MetaPaginationSchema,
 })

@@ -213,7 +213,7 @@ describe('recordClick', () => {
 describe('getUrlStats', () => {
   it('returns null when the slug does not exist', async () => {
     mockFindFirstUrl.mockResolvedValue(undefined)
-    const result = await getUrlStats('notexist')
+    const result = await getUrlStats('notexist', 'http://localhost:3001')
     expect(result).toBeNull()
   })
 
@@ -224,13 +224,14 @@ describe('getUrlStats', () => {
       .mockReturnValueOnce(makeSelectChain([]))
     mockFindManyClicks.mockResolvedValue([])
 
-    const result = await getUrlStats('abc12345')
+    const result = await getUrlStats('abc12345', 'http://localhost:3001')
 
     expect(result).not.toBeNull()
     expect(result!.totalClicks).toBe(5)
     expect(result!.clicksLast24h).toBe(2)
     expect(result!.clicksLast7d).toBe(4)
     expect(result!.url.slug).toBe('abc12345')
+    expect(result!.url.shortUrl).toBe('http://localhost:3001/abc12345')
     expect(result!.clicksByDay).toHaveLength(30)
   })
 })

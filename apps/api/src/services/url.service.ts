@@ -118,7 +118,7 @@ export async function recordClick(
   })
 }
 
-export async function getUrlStats(slug: string): Promise<UrlStats | null> {
+export async function getUrlStats(slug: string, baseUrl: string): Promise<UrlStats | null> {
   const url = await findUrlBySlug(slug)
   if (!url) return null
 
@@ -165,7 +165,7 @@ export async function getUrlStats(slug: string): Promise<UrlStats | null> {
   }
 
   return {
-    url: toUrlRecord(url),
+    url: { ...toUrlRecord(url), shortUrl: `${baseUrl}/${url.slug}` },
     totalClicks: Number(clickStats?.total ?? 0),
     clicksByDay: Array.from(dayMap, ([date, clicks]) => ({ date, count: clicks })),
     clicksLast24h: Number(clickStats?.last24h ?? 0),
