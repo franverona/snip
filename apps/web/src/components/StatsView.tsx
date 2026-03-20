@@ -1,11 +1,13 @@
 'use client'
 
+import { useRef } from 'react'
 import styled from 'styled-components'
 import type { UrlStats } from '@snip/types'
 import { Button, useConfirmDialog } from './ui'
 import { api } from '@/lib/api'
 import { useRouter } from 'next/navigation'
 import { useToast } from './Toast'
+import { QRCodeCanvas, QRCodeSVG } from 'qrcode.react'
 
 // ---- Styled components ----
 
@@ -49,6 +51,42 @@ const CardLabel = styled.p`
   letter-spacing: 0.05em;
   color: #9ca3af;
   margin-bottom: 0.25rem;
+`
+
+const DetailsGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+
+  @media (min-width: 480px) {
+    grid-template-columns: 136px 1fr;
+  }
+`
+
+const DetailsCard = styled.div`
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+`
+
+const DownloadButton = styled.button`
+  margin-top: 0.5rem;
+  width: 100%;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  border-radius: 0.25rem;
+  padding: 0.25rem 0;
+  font-size: 0.7rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.1s;
+
+  &:hover {
+    background: #f9fafb;
+  }
 `
 
 const OriginalLink = styled.a`
@@ -173,6 +211,16 @@ export function StatsView({ stats, slug }: Props) {
   const router = useRouter()
   const { showToast } = useToast()
   const { openConfirmDialog, confirmDialog } = useConfirmDialog()
+  const qrCanvasRef = useRef<HTMLCanvasElement>(null)
+
+  function handleDownloadQR() {
+    const canvas = qrCanvasRef.current
+    if (!canvas) return
+    const link = document.createElement('a')
+    link.download = `${slug}.png`
+    link.href = canvas.toDataURL('image/png')
+    link.click()
+  }
 
   const { url, totalClicks, clicksLast24h, clicksLast7d } = stats
   const maxClicks = Math.max(totalClicks, 1)
@@ -229,12 +277,26 @@ export function StatsView({ stats, slug }: Props) {
         </ExpiredBanner>
       )}
 
-      <Card>
-        <CardLabel>Original URL</CardLabel>
-        <OriginalLink href={url.originalUrl} target="_blank" rel="noopener noreferrer">
-          {url.originalUrl}
-        </OriginalLink>
-      </Card>
+      <DetailsGrid>
+        <DetailsCard>
+          <CardLabel>QR Code</CardLabel>
+          <QRCodeSVG height={100} width={100} title={url.shortUrl} value={url.shortUrl} />
+          <QRCodeCanvas
+            ref={qrCanvasRef}
+            height={256}
+            width={256}
+            value={url.shortUrl}
+            style={{ display: 'none' }}
+          />
+          <DownloadButton onClick={handleDownloadQR}>Download PNG</DownloadButton>
+        </DetailsCard>
+        <DetailsCard>
+          <CardLabel>Original URL</CardLabel>
+          <OriginalLink href={url.originalUrl} target="_blank" rel="noopener noreferrer">
+            {url.originalUrl}
+          </OriginalLink>
+        </DetailsCard>
+      </DetailsGrid>
 
       <StatsGrid>
         <StatCard>
