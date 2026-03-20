@@ -32,5 +32,6 @@ pnpm-debug.log
 
 # TypeScript
 *.tsbuildinfo
+apps/web/next-env.d.ts
 
 .playwright-mcp
