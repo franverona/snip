@@ -135,4 +135,16 @@ describe('GET /:slug', () => {
     expect(res.body).toContain('Hello &lt;World&gt; &amp; &quot;Friends&quot;')
     expect(res.body).not.toContain('<World>')
   })
+
+  it('still returns 200 when click recording throws (fire-and-forget contract)', async () => {
+    vi.mocked(findUrlBySlug).mockResolvedValue(mockUrlRow)
+    vi.mocked(recordClick).mockRejectedValue(new Error('DB error'))
+
+    const res = await app.inject({ method: 'GET', url: '/abc12345' })
+
+    // Flush setImmediate so the fire-and-forget recordClick executes
+    await new Promise((resolve) => setImmediate(resolve))
+
+    expect(res.statusCode).toBe(200)
+  })
 })
