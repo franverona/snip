@@ -45,10 +45,16 @@ const MenuItem = styled(Link)<{ $active: boolean }>`
   font-weight: 600;
   color: ${({ $active }) => ($active ? '#2563eb' : '#6b7688')};
   border-radius: 4px;
+  white-space: nowrap;
 
   &:hover {
     color: #2563eb;
     background-color: #f6f8fe;
+  }
+
+  @media (max-width: 480px) {
+    padding: 0.5rem 0.5rem;
+    font-size: 0.8125rem;
   }
 `
 

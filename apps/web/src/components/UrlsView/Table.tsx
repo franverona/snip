@@ -58,7 +58,7 @@ const CardUrls = styled.div`
 `
 
 const ShortLink = styled.a`
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 0.3rem;
   color: #111827;
@@ -66,7 +66,8 @@ const ShortLink = styled.a`
   font-size: 0.8125rem;
   text-decoration: none;
   white-space: nowrap;
-  flex-shrink: 0;
+  min-width: 0;
+  overflow: hidden;
 
   svg {
     color: #9ca3af;
@@ -80,6 +81,12 @@ const ShortLink = styled.a`
       color: #2563eb;
     }
   }
+`
+
+const ShortLinkText = styled.span`
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 `
 
 const DestinationLink = styled.a`
@@ -105,6 +112,10 @@ const DateLabel = styled.span`
   font-size: 0.75rem;
   color: #9ca3af;
   white-space: nowrap;
+
+  @media (max-width: 480px) {
+    display: none;
+  }
 `
 
 const ViewStatsLink = styled(Link)`
@@ -138,9 +149,10 @@ function UrlCard({ url }: { url: UrlListRecord }) {
   return (
     <Card>
       <CardRow>
-        {isExpired && <ExpiredBadge title={`Expired ${expiresAtFormatted}`}>expired</ExpiredBadge>}
-
         <CardUrls>
+          {isExpired && (
+            <ExpiredBadge title={`Expired ${expiresAtFormatted}`}>expired</ExpiredBadge>
+          )}
           <ShortLink
             href={url.shortUrl}
             title={url.shortUrl}
@@ -163,7 +175,7 @@ function UrlCard({ url }: { url: UrlListRecord }) {
               <path d="M10 14 21 3" />
               <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
             </svg>
-            {url.shortUrl}
+            <ShortLinkText>{url.shortUrl}</ShortLinkText>
           </ShortLink>
           <DestinationLink
             href={url.originalUrl}

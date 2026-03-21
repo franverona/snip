@@ -17,6 +17,11 @@ const ControlsBar = styled.div`
   justify-content: space-between;
   gap: 1rem;
   margin-bottom: 1rem;
+
+  @media (max-width: 480px) {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
 `
 
 const PerPageWrapper = styled.div`
@@ -25,6 +30,12 @@ const PerPageWrapper = styled.div`
   gap: 0.5rem;
   font-size: 0.875rem;
   flex-shrink: 0;
+`
+
+const PerPageLabel = styled.span`
+  @media (max-width: 480px) {
+    display: none;
+  }
 `
 
 export function UrlsView({ data, q }: { data: UrlList; q?: string }) {
@@ -36,7 +47,7 @@ export function UrlsView({ data, q }: { data: UrlList; q?: string }) {
         <SearchForm key={q ?? ''} q={q} perPage={data.meta.perPage} />
         <PerPageWrapper>
           <PerPageSelector perPage={data.meta.perPage} q={q} />
-          Items per page
+          <PerPageLabel>Items per page</PerPageLabel>
         </PerPageWrapper>
       </ControlsBar>
       {noResults ? (

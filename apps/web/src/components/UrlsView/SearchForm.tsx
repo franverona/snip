@@ -8,6 +8,8 @@ const Wrapper = styled.div`
   display: flex;
   align-items: center;
   gap: 0.375rem;
+  flex: 1;
+  min-width: 0;
 `
 
 const Input = styled.input`
@@ -17,6 +19,11 @@ const Input = styled.input`
   border-radius: 5px;
   outline: none;
   width: 220px;
+
+  @media (max-width: 480px) {
+    width: 100%;
+    flex: 1;
+  }
   color: #111827;
 
   &::placeholder {

@@ -11,11 +11,18 @@ const Wrapper = styled.div`
   font-size: 0.8125rem;
   padding: 0.75rem 0.5rem 0;
   border-top: 1px solid #f3f4f6;
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+  }
 `
 
 const TotalResults = styled.div`
   color: #6b7280;
   font-weight: 500;
+  white-space: nowrap;
 `
 
 const ActionsWrapper = styled.div`
