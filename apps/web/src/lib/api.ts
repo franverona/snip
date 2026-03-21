@@ -1,6 +1,11 @@
 import type { CreateUrlInput, CreateUrlResponse, UrlList, UrlStats } from '@snip/types'
 
-const BASE_URL = process.env['NEXT_PUBLIC_API_URL'] ?? 'http://localhost:3001'
+// API_URL is used for server-side fetches (e.g. http://api:3001 inside Docker).
+// NEXT_PUBLIC_API_URL is baked into the browser bundle and used for client-side fetches.
+const BASE_URL =
+  (typeof window === 'undefined' ? process.env['API_URL'] : undefined) ??
+  process.env['NEXT_PUBLIC_API_URL'] ??
+  'http://localhost:3001'
 
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const headers = {

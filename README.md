@@ -15,6 +15,7 @@ A self-hosted URL shortener that turns long, unwieldy links into clean and share
 - [Stack](#stack)
 - [Screenshots](#screenshots)
 - [Getting started](#getting-started)
+- [Docker full-stack](#docker-full-stack)
 - [Scripts](#scripts)
 - [Environment variables](#environment-variables)
 - [API reference](#api-reference)
@@ -131,6 +132,41 @@ pnpm dev
 | Frontend | http://localhost:3000 |
 | API      | http://localhost:3001 |
 
+## Docker full-stack
+
+Both Dockerfiles use multi-stage builds with `dev` and `prod` targets.
+
+### Dev profile (hot-reloading)
+
+```bash
+docker compose --profile dev up
+```
+
+Source is mounted as a volume and the same watch-mode dev servers run as local development (`tsx watch` / `next dev`), so edits are reflected immediately without rebuilding the image.
+
+| Service  | URL                   |
+| -------- | --------------------- |
+| Frontend | http://localhost:3000 |
+| API      | http://localhost:3001 |
+
+> **First run:** Docker builds the image and installs dependencies, which takes a few minutes. Subsequent starts are fast because the layers are cached.
+
+### Prod profile (optimised builds)
+
+Set the required environment variables, then run:
+
+```bash
+export IP_HASH_SECRET=your-secret
+export CORS_ORIGIN=http://localhost:3000   # or your public web URL
+export NEXT_PUBLIC_API_URL=http://localhost:3001  # public API URL seen by the browser
+
+docker compose --profile prod up -d
+```
+
+`NEXT_PUBLIC_API_URL` is baked into the browser bundle at build time, so it must be set before the first `docker compose --profile prod up`. If you change it, rebuild the `web-prod` image with `docker compose --profile prod build web-prod`.
+
+The `DATABASE_URL` defaults to the local `db` service (`postgresql://snip:snip@db:5432/snip`). Override it with `export DATABASE_URL=...` to point at an external database instead.
+
 ## Scripts
 
 | Command                                  | Description                                  |
@@ -163,10 +199,11 @@ pnpm dev
 
 ### Web (`apps/web`)
 
-| Variable                  | Required | Default                 | Description                               |
-| ------------------------- | -------- | ----------------------- | ----------------------------------------- |
-| `NEXT_PUBLIC_API_URL`     | No       | `http://localhost:3001` | API base URL, accessible from the browser |
-| `NEXT_TELEMETRY_DISABLED` | No       | `1`                     | Set to `1` to disable Next.js telemetry   |
+| Variable                  | Required | Default                 | Description                                                                                                                                        |
+| ------------------------- | -------- | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_API_URL`     | No       | `http://localhost:3001` | API base URL baked into the browser bundle. Used for client-side fetches                                                                           |
+| `API_URL`                 | No       | `NEXT_PUBLIC_API_URL`   | API base URL for server-side (SSR) fetches. In Docker, set to the internal service URL (e.g. `http://api:3001`) so SSR can reach the API container |
+| `NEXT_TELEMETRY_DISABLED` | No       | `1`                     | Set to `1` to disable Next.js telemetry                                                                                                            |
 
 ## API reference
 
