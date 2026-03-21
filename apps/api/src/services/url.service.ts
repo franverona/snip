@@ -62,15 +62,6 @@ export async function createUrl(input: CreateUrlInput, baseUrl: string) {
     throw new Error('PRIVATE_ADDRESS')
   }
 
-  if (input.customSlug) {
-    const existing = await db.query.urls.findFirst({
-      where: eq(urls.slug, input.customSlug),
-    })
-    if (existing) {
-      throw new Error('SLUG_TAKEN')
-    }
-  }
-
   for (let attempt = 0; attempt < 3; attempt++) {
     const slug = input.customSlug ?? nanoid(8)
     try {
@@ -91,7 +82,10 @@ export async function createUrl(input: CreateUrlInput, baseUrl: string) {
         shortUrl: `${baseUrl}/${url.slug}`,
       }
     } catch (err) {
-      if (isUniqueConstraintError(err) && !input.customSlug) continue
+      if (isUniqueConstraintError(err)) {
+        if (input.customSlug) throw new Error('SLUG_TAKEN', { cause: err })
+        continue
+      }
       throw err
     }
   }
