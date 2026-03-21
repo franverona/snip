@@ -63,8 +63,23 @@ const links = [
   },
 ]
 
-export function Header() {
+const LogoutLink = styled.a`
+  padding: 0.5rem 0.825rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #6b7688;
+  border-radius: 4px;
+  cursor: pointer;
+
+  &:hover {
+    color: #2563eb;
+    background-color: #f6f8fe;
+  }
+`
+
+export function Header({ hasPassword = false }: { hasPassword?: boolean }) {
   const pathname = usePathname()
+  const isLoginPage = pathname === '/login'
   return (
     <Nav>
       <Inner>
@@ -73,11 +88,13 @@ export function Header() {
           snip
         </Logo>
         <Menu>
-          {links.map(({ label, href }) => (
-            <MenuItem key={href} $active={pathname === href} href={href}>
-              {label}
-            </MenuItem>
-          ))}
+          {!isLoginPage &&
+            links.map(({ label, href }) => (
+              <MenuItem key={href} $active={pathname === href} href={href}>
+                {label}
+              </MenuItem>
+            ))}
+          {hasPassword && !isLoginPage && <LogoutLink href="/logout">Sign out</LogoutLink>}
         </Menu>
       </Inner>
     </Nav>

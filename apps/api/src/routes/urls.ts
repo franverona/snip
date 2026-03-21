@@ -9,12 +9,14 @@ import {
 } from '../services/url.service.js'
 import { env } from '../config.js'
 import { parsePagination } from '../lib/pagination.js'
+import { requireApiKey } from '../lib/api-key.js'
 
 export async function urlRoutes(fastify: FastifyInstance) {
   // GET /urls — lists created URLs
   fastify.get<{ Querystring: { page?: number; perPage?: number } }>(
     '/urls',
     {
+      preHandler: [requireApiKey],
       schema: {
         querystring: {
           type: 'object',
@@ -42,6 +44,7 @@ export async function urlRoutes(fastify: FastifyInstance) {
   fastify.post(
     '/urls',
     {
+      preHandler: [requireApiKey],
       config: {
         rateLimit: {
           max: env.RATE_LIMIT_CREATE_PER_MINUTE,
@@ -83,43 +86,55 @@ export async function urlRoutes(fastify: FastifyInstance) {
   )
 
   // GET /urls/:slug/stats
-  fastify.get<{ Params: { slug: string } }>('/urls/:slug/stats', async (request, reply) => {
-    const { slug } = request.params
-    const stats = await getUrlStats(slug, env.BASE_URL)
-    if (!stats) {
-      return reply.status(404).send({ error: 'URL not found' })
-    }
-    return reply.send(stats)
-  })
-
-  // DELETE /urls/:slug
-  fastify.delete<{ Params: { slug: string } }>('/urls/:slug', async (request, reply) => {
-    const { slug } = request.params
-    const deleted = await deleteUrl(slug)
-    if (!deleted) {
-      return reply.status(404).send({ error: 'URL not found' })
-    }
-    return reply.status(204).send()
-  })
-
-  // GET /preview/:slug
-  fastify.get<{ Params: { slug: string } }>('/preview/:slug', async (request, reply) => {
-    const { slug } = request.params
-    try {
-      const url = await getUrlPreview(slug)
-      if (!url) {
+  fastify.get<{ Params: { slug: string } }>(
+    '/urls/:slug/stats',
+    { preHandler: [requireApiKey] },
+    async (request, reply) => {
+      const { slug } = request.params
+      const stats = await getUrlStats(slug, env.BASE_URL)
+      if (!stats) {
         return reply.status(404).send({ error: 'URL not found' })
       }
+      return reply.send(stats)
+    },
+  )
 
-      return reply.send(url)
-    } catch (err) {
-      if (err instanceof Error) {
-        switch (err.message) {
-          case 'EXPIRED':
-            return reply.status(410).send({ error: 'URL is expired' })
-        }
+  // DELETE /urls/:slug
+  fastify.delete<{ Params: { slug: string } }>(
+    '/urls/:slug',
+    { preHandler: [requireApiKey] },
+    async (request, reply) => {
+      const { slug } = request.params
+      const deleted = await deleteUrl(slug)
+      if (!deleted) {
+        return reply.status(404).send({ error: 'URL not found' })
       }
-      throw err
-    }
-  })
+      return reply.status(204).send()
+    },
+  )
+
+  // GET /preview/:slug
+  fastify.get<{ Params: { slug: string } }>(
+    '/preview/:slug',
+    { preHandler: [requireApiKey] },
+    async (request, reply) => {
+      const { slug } = request.params
+      try {
+        const url = await getUrlPreview(slug)
+        if (!url) {
+          return reply.status(404).send({ error: 'URL not found' })
+        }
+
+        return reply.send(url)
+      } catch (err) {
+        if (err instanceof Error) {
+          switch (err.message) {
+            case 'EXPIRED':
+              return reply.status(410).send({ error: 'URL is expired' })
+          }
+        }
+        throw err
+      }
+    },
+  )
 }

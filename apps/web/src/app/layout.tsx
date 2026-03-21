@@ -10,11 +10,12 @@ export const metadata: Metadata = {
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const hasPassword = !!process.env['DASHBOARD_PASSWORD']
   return (
     <html lang="en">
       <body>
         <StyledComponentsRegistry>
-          <Header />
+          <Header hasPassword={hasPassword} />
           <ToastProvider>
             <main
               style={{

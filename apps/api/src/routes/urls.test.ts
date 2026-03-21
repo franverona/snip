@@ -3,6 +3,14 @@ import Fastify, { type FastifyInstance } from 'fastify'
 import rateLimit from '@fastify/rate-limit'
 import { urlRoutes } from './urls.js'
 
+vi.mock('../config.js', () => ({
+  env: {
+    BASE_URL: 'http://localhost:3001',
+    RATE_LIMIT_CREATE_PER_MINUTE: 10,
+    API_KEY: undefined as string | undefined,
+  },
+}))
+
 vi.mock('../services/url.service.js', () => ({
   getUrlList: vi.fn(),
   createUrl: vi.fn(),
@@ -26,6 +34,7 @@ import {
   getUrlPreview,
 } from '../services/url.service.js'
 import { parsePagination } from '../lib/pagination.js'
+import { env } from '../config.js'
 
 const mockUrlResult = {
   id: '00000000-0000-0000-0000-000000000001',
@@ -285,5 +294,113 @@ describe('GET /preview/:slug', () => {
     const res = await app.inject({ method: 'GET', url: '/preview/abc12345' })
 
     expect(res.statusCode).toBe(500)
+  })
+})
+
+describe('API_KEY enforcement', () => {
+  beforeEach(() => {
+    ;(env as { API_KEY: string | undefined }).API_KEY = 'test-api-key'
+  })
+
+  afterEach(() => {
+    ;(env as { API_KEY: string | undefined }).API_KEY = undefined
+  })
+
+  describe('POST /urls', () => {
+    it('returns 401 when API_KEY is set and no Authorization header is provided', async () => {
+      const res = await app.inject({
+        method: 'POST',
+        url: '/urls',
+        payload: { originalUrl: 'https://example.com' },
+      })
+
+      expect(res.statusCode).toBe(401)
+      expect(res.json().error).toBe('Unauthorized')
+    })
+
+    it('returns 401 when API_KEY is set and Authorization header is wrong', async () => {
+      const res = await app.inject({
+        method: 'POST',
+        url: '/urls',
+        payload: { originalUrl: 'https://example.com' },
+        headers: { authorization: 'Bearer wrong-key' },
+      })
+
+      expect(res.statusCode).toBe(401)
+    })
+
+    it('returns 201 when API_KEY is set and correct Authorization header is provided', async () => {
+      vi.mocked(createUrl).mockResolvedValue(mockUrlResult)
+
+      const res = await app.inject({
+        method: 'POST',
+        url: '/urls',
+        payload: { originalUrl: 'https://example.com' },
+        headers: { authorization: 'Bearer test-api-key' },
+      })
+
+      expect(res.statusCode).toBe(201)
+    })
+  })
+
+  describe('GET /urls', () => {
+    it('returns 401 when no Authorization header is provided', async () => {
+      const res = await app.inject({ method: 'GET', url: '/urls' })
+
+      expect(res.statusCode).toBe(401)
+      expect(res.json().error).toBe('Unauthorized')
+    })
+
+    it('returns 200 when correct Authorization header is provided', async () => {
+      vi.mocked(getUrlList).mockResolvedValue({
+        data: [],
+        meta: { page: 1, perPage: 20, total: 0, totalPages: 0 },
+      })
+
+      const res = await app.inject({
+        method: 'GET',
+        url: '/urls',
+        headers: { authorization: 'Bearer test-api-key' },
+      })
+
+      expect(res.statusCode).toBe(200)
+    })
+  })
+
+  describe('GET /urls/:slug/stats', () => {
+    it('returns 401 when no Authorization header is provided', async () => {
+      const res = await app.inject({ method: 'GET', url: '/urls/abc12345/stats' })
+
+      expect(res.statusCode).toBe(401)
+    })
+  })
+
+  describe('GET /preview/:slug', () => {
+    it('returns 401 when no Authorization header is provided', async () => {
+      const res = await app.inject({ method: 'GET', url: '/preview/abc12345' })
+
+      expect(res.statusCode).toBe(401)
+    })
+  })
+
+  describe('DELETE /urls/:slug', () => {
+    it('returns 401 when API_KEY is set and no Authorization header is provided', async () => {
+      const res = await app.inject({ method: 'DELETE', url: '/urls/abc12345' })
+
+      expect(res.statusCode).toBe(401)
+      expect(res.json().error).toBe('Unauthorized')
+    })
+
+    it('returns 204 when API_KEY is set and correct Authorization header is provided', async () => {
+      vi.mocked(deleteUrl).mockResolvedValue(true)
+
+      const res = await app.inject({
+        method: 'DELETE',
+        url: '/urls/abc12345',
+        headers: { authorization: 'Bearer test-api-key' },
+      })
+
+      expect(res.statusCode).toBe(204)
+    })
   })
 })
