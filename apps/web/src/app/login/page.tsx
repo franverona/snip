@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import styled from 'styled-components'
 
@@ -79,7 +79,7 @@ const ErrorMsg = styled.p`
   color: #dc2626;
 `
 
-export default function LoginPage() {
+function LoginForm() {
   const searchParams = useSearchParams()
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -125,5 +125,13 @@ export default function LoginPage() {
         </form>
       </Card>
     </Wrapper>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
   )
 }
