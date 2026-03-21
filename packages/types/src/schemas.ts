@@ -29,6 +29,8 @@ export const UrlRecordSchema = z.object({
   slug: z.string(),
   originalUrl: urlSchema,
   customSlug: z.boolean(),
+  title: z.string().nullable(),
+  description: z.string().nullable(),
   expiresAt: z.iso.datetime().nullable(),
   createdAt: z.iso.datetime(),
 })

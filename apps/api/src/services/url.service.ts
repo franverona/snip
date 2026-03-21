@@ -14,6 +14,8 @@ function toUrlRecord(url: Url): UrlRecord {
     slug: url.slug,
     originalUrl: url.originalUrl,
     customSlug: url.customSlug,
+    title: url.title,
+    description: url.description,
     expiresAt: url.expiresAt ? url.expiresAt.toISOString() : null,
     createdAt: url.createdAt.toISOString(),
   }
@@ -39,6 +41,38 @@ function isUniqueConstraintError(err: unknown): boolean {
   )
 }
 
+type PageMeta = { title: string | null; description: string | null }
+
+async function fetchPageMeta(url: string): Promise<PageMeta> {
+  try {
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 3000)
+    try {
+      const res = await fetch(url, {
+        signal: controller.signal,
+        headers: { 'User-Agent': 'snip-bot/1.0 (link preview fetcher)' },
+        redirect: 'follow',
+      })
+      if (!res.ok) return { title: null, description: null }
+      const contentType = res.headers.get('content-type') ?? ''
+      if (!contentType.includes('text/html')) return { title: null, description: null }
+      const html = await res.text()
+      const titleMatch = html.match(/<title[^>]*>([^<]*)<\/title>/i)
+      const title = titleMatch ? titleMatch[1]!.trim() || null : null
+      const descMatch =
+        html.match(/<meta\s+name="description"\s+content="([^"]*)"/i) ??
+        html.match(/<meta\s+content="([^"]*)"\s+name="description"/i) ??
+        html.match(/<meta\s+property="og:description"\s+content="([^"]*)"/i)
+      const description = descMatch ? descMatch[1]!.trim() || null : null
+      return { title, description }
+    } finally {
+      clearTimeout(timeout)
+    }
+  } catch {
+    return { title: null, description: null }
+  }
+}
+
 export async function createUrl(input: CreateUrlInput, baseUrl: string) {
   const baseHost = new URL(baseUrl).host
   const { host, hostname } = new URL(input.originalUrl)
@@ -62,6 +96,8 @@ export async function createUrl(input: CreateUrlInput, baseUrl: string) {
     throw new Error('PRIVATE_ADDRESS')
   }
 
+  const { title, description } = await fetchPageMeta(input.originalUrl)
+
   for (let attempt = 0; attempt < 3; attempt++) {
     const slug = input.customSlug ?? nanoid(8)
     try {
@@ -72,6 +108,8 @@ export async function createUrl(input: CreateUrlInput, baseUrl: string) {
           originalUrl: input.originalUrl,
           customSlug: !!input.customSlug,
           expiresAt: input.expiresAt ? new Date(input.expiresAt) : null,
+          title,
+          description,
         })
         .returning()
 
@@ -181,6 +219,8 @@ export async function getUrlList(page: number, perPage: number, offset: number) 
         slug: urls.slug,
         originalUrl: urls.originalUrl,
         customSlug: urls.customSlug,
+        title: urls.title,
+        description: urls.description,
         expiresAt: urls.expiresAt,
         createdAt: urls.createdAt,
       })
