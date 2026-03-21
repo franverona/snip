@@ -7,6 +7,7 @@ const {
   mockInsertReturning,
   mockSelectChain,
   mockDeleteReturning,
+  mockFetch,
 } = vi.hoisted(() => {
   function makeSelectChain(result: unknown) {
     const chain: Record<string, unknown> = {
@@ -21,6 +22,9 @@ const {
     return chain
   }
 
+  const mockFetch = vi.fn()
+  vi.stubGlobal('fetch', mockFetch)
+
   return {
     makeSelectChain,
     mockFindFirstUrl: vi.fn(),
@@ -28,6 +32,7 @@ const {
     mockInsertReturning: vi.fn(),
     mockSelectChain: vi.fn(() => makeSelectChain([])),
     mockDeleteReturning: vi.fn(),
+    mockFetch,
   }
 })
 
@@ -71,6 +76,8 @@ const mockUrlRow = {
   id: 'uuid-1',
   slug: 'abc12345',
   originalUrl: 'https://example.com',
+  title: null,
+  description: null,
   customSlug: false,
   expiresAt: null,
   createdAt: new Date('2024-01-01T00:00:00Z'),
@@ -83,6 +90,8 @@ beforeEach(() => {
     typeof ipaddr.parse
   >)
   mockSelectChain.mockReturnValue(makeSelectChain([]))
+  // Default: fetch fails gracefully so title is null
+  mockFetch.mockResolvedValue({ ok: false })
 })
 
 describe('createUrl', () => {
@@ -182,6 +191,47 @@ describe('createUrl', () => {
 
     expect(mockInsertReturning).toHaveBeenCalledTimes(3)
   })
+
+  it('stores the fetched page title and description on successful creation', async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      headers: { get: (h: string) => (h === 'content-type' ? 'text/html; charset=utf-8' : null) },
+      text: async () =>
+        '<html><head><title>My Page</title><meta name="description" content="A great page"></head></html>',
+    })
+    mockInsertReturning.mockResolvedValue([
+      { ...mockUrlRow, title: 'My Page', description: 'A great page' },
+    ])
+
+    const result = await createUrl({ originalUrl: 'https://example.com' }, BASE_URL)
+
+    expect(result.title).toBe('My Page')
+    expect(result.description).toBe('A great page')
+  })
+
+  it('creates URL with null title and description when fetch fails', async () => {
+    mockFetch.mockRejectedValue(new Error('network error'))
+    mockInsertReturning.mockResolvedValue([mockUrlRow])
+
+    const result = await createUrl({ originalUrl: 'https://example.com' }, BASE_URL)
+
+    expect(result.title).toBeNull()
+    expect(result.description).toBeNull()
+  })
+
+  it('creates URL with null title and description when response is not HTML', async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      headers: { get: (h: string) => (h === 'content-type' ? 'application/json' : null) },
+      text: async () => '{}',
+    })
+    mockInsertReturning.mockResolvedValue([mockUrlRow])
+
+    const result = await createUrl({ originalUrl: 'https://example.com' }, BASE_URL)
+
+    expect(result.title).toBeNull()
+    expect(result.description).toBeNull()
+  })
 })
 
 describe('findUrlBySlug', () => {
@@ -263,6 +313,8 @@ describe('getUrlList', () => {
           slug: mockUrlRow.slug,
           originalUrl: mockUrlRow.originalUrl,
           customSlug: mockUrlRow.customSlug,
+          title: null,
+          description: null,
           expiresAt: null,
           createdAt: '2024-01-01T00:00:00.000Z',
         },
@@ -300,6 +352,8 @@ describe('getUrlPreview', () => {
       slug: mockUrlRow.slug,
       originalUrl: mockUrlRow.originalUrl,
       customSlug: mockUrlRow.customSlug,
+      title: null,
+      description: null,
       expiresAt: null,
       createdAt: '2024-01-01T00:00:00.000Z',
     })

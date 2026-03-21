@@ -32,6 +32,8 @@ const mockUrlResult = {
   slug: 'abc12345',
   originalUrl: 'https://example.com',
   customSlug: false,
+  title: null,
+  description: null,
   expiresAt: null,
   createdAt: '2024-01-01T00:00:00.000Z',
   shortUrl: 'http://localhost:3001/abc12345',
@@ -42,6 +44,8 @@ const mockUrlRecord = {
   slug: 'abc12345',
   originalUrl: 'https://example.com',
   customSlug: false,
+  title: null,
+  description: null,
   expiresAt: null,
   createdAt: '2024-01-01T00:00:00.000Z',
 }
