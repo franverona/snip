@@ -134,15 +134,15 @@ describe('createUrl', () => {
     )
   })
 
-  it('throws SLUG_TAKEN when custom slug is already in use', async () => {
-    mockFindFirstUrl.mockResolvedValue(mockUrlRow)
+  it('throws SLUG_TAKEN when custom slug already exists (including race condition on insert)', async () => {
+    const uniqueViolation = Object.assign(new Error('unique violation'), { code: '23505' })
+    mockInsertReturning.mockRejectedValue(uniqueViolation)
     await expect(
       createUrl({ originalUrl: 'https://example.com', customSlug: 'taken' }, BASE_URL),
     ).rejects.toThrow('SLUG_TAKEN')
   })
 
   it('creates a URL with a custom slug and returns the short URL', async () => {
-    mockFindFirstUrl.mockResolvedValue(null)
     mockInsertReturning.mockResolvedValue([mockUrlRow])
 
     const result = await createUrl(
