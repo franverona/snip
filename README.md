@@ -196,6 +196,7 @@ The `DATABASE_URL` defaults to the local `db` service (`postgresql://snip:snip@d
 | `CORS_ORIGIN`                  | No       | `BASE_URL`              | Allowed CORS origin. In production, set this to the web app's origin — `BASE_URL` is the API's own URL and is not a safe fallback |
 | `RATE_LIMIT_CREATE_PER_MINUTE` | No       | `10`                    | Max requests per minute for `POST /urls`                                                                                          |
 | `DATABASE_POOL_MAX`            | No       | `10`                    | Maximum number of connections in the database pool                                                                                |
+| `API_KEY`                      | No       | —                       | When set, `POST /urls` and `DELETE /urls/:slug` require `Authorization: Bearer <key>`. Unset means those endpoints are public     |
 
 ### Web (`apps/web`)
 
@@ -204,6 +205,52 @@ The `DATABASE_URL` defaults to the local `db` service (`postgresql://snip:snip@d
 | `NEXT_PUBLIC_API_URL`     | No       | `http://localhost:3001` | API base URL baked into the browser bundle. Used for client-side fetches                                                                           |
 | `API_URL`                 | No       | `NEXT_PUBLIC_API_URL`   | API base URL for server-side (SSR) fetches. In Docker, set to the internal service URL (e.g. `http://api:3001`) so SSR can reach the API container |
 | `NEXT_TELEMETRY_DISABLED` | No       | `1`                     | Set to `1` to disable Next.js telemetry                                                                                                            |
+| `DASHBOARD_PASSWORD`      | No       | —                       | When set, all dashboard pages require a password. Unauthenticated visitors are redirected to `/login`                                              |
+| `API_KEY`                 | No       | —                       | Forwarded as `Authorization: Bearer <key>` on mutating API requests. Must match `API_KEY` in `apps/api`                                            |
+
+## Access protection
+
+Both protections are opt-in — omitting the env vars leaves the app fully open, which is fine for local development or trusted internal networks.
+
+### Dashboard password
+
+Set `DASHBOARD_PASSWORD` in `apps/web` to gate the entire dashboard behind a login page. Visitors who aren't authenticated are redirected to `/login` before they can access any page.
+
+```bash
+# apps/web/.env.local
+DASHBOARD_PASSWORD=your-password
+```
+
+### API key
+
+Set `API_KEY` in `apps/api` to require an `Authorization: Bearer <key>` header on all endpoints except `GET /:slug` (the public redirect). Without it, anyone with network access to the API can create or delete URLs.
+
+```bash
+# apps/api/.env.local
+API_KEY=your-api-key
+```
+
+Set the matching value in `apps/web` so the dashboard can still talk to the API:
+
+```bash
+# apps/web/.env.local
+API_KEY=your-api-key   # must match the value above
+```
+
+### Using both together
+
+For a fully locked-down self-hosted instance, set all three variables:
+
+```bash
+# apps/api/.env.local
+API_KEY=your-api-key
+
+# apps/web/.env.local
+DASHBOARD_PASSWORD=your-dashboard-password
+API_KEY=your-api-key
+```
+
+The dashboard password protects the web UI; the API key protects the API itself from direct access via cURL or other HTTP clients.
 
 ## API reference
 

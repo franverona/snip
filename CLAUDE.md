@@ -6,7 +6,7 @@ Guidelines for Claude Code when working in this repository.
 
 - **Single source of truth for types**: all Zod schemas and TypeScript types live in `packages/types/src/`. Never define API request/response types inside `apps/api` or `apps/web` — import from `@snip/types` instead.
 - **No tRPC**: the frontend uses plain `fetch` via `apps/web/src/lib/api.ts`.
-- **No authentication**: this project intentionally has no auth layer.
+- **Optional access protection**: `DASHBOARD_PASSWORD` (web) gates the dashboard behind a login page. `API_KEY` (api) requires `Authorization: Bearer <key>` on mutating endpoints. Both default to off — no breaking change.
 
 ## Frontend
 
@@ -51,6 +51,7 @@ Keep this table up to date when adding, removing, or changing env vars. Also upd
 | `CORS_ORIGIN`                  | No       | `BASE_URL`              | Allowed CORS origin. In production, set this to the web app's origin — `BASE_URL` is the API's own URL and is not a safe fallback |
 | `RATE_LIMIT_CREATE_PER_MINUTE` | No       | `10`                    | Max requests per minute for `POST /urls`                                                                                          |
 | `DATABASE_POOL_MAX`            | No       | `10`                    | Maximum number of connections in the database pool                                                                                |
+| `API_KEY`                      | No       | —                       | When set, `POST /urls` and `DELETE /urls/:slug` require `Authorization: Bearer <key>`. Unset means those endpoints are public     |
 
 ### Web (`apps/web`)
 
@@ -59,6 +60,8 @@ Keep this table up to date when adding, removing, or changing env vars. Also upd
 | `NEXT_PUBLIC_API_URL`     | No       | `http://localhost:3001` | API base URL baked into the browser bundle. Used for client-side fetches                                                                           |
 | `API_URL`                 | No       | `NEXT_PUBLIC_API_URL`   | API base URL for server-side (SSR) fetches. In Docker, set to the internal service URL (e.g. `http://api:3001`) so SSR can reach the API container |
 | `NEXT_TELEMETRY_DISABLED` | No       | `1`                     | Set to `1` to disable Next.js telemetry                                                                                                            |
+| `DASHBOARD_PASSWORD`      | No       | —                       | When set, all dashboard pages require a password. Unauthenticated visitors are redirected to `/login`                                              |
+| `API_KEY`                 | No       | —                       | Forwarded as `Authorization: Bearer <key>` on mutating API requests. Must match `API_KEY` in `apps/api`                                            |
 
 ## Code style
 
