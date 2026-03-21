@@ -13,7 +13,7 @@ import { requireApiKey } from '../lib/api-key.js'
 
 export async function urlRoutes(fastify: FastifyInstance) {
   // GET /urls — lists created URLs
-  fastify.get<{ Querystring: { page?: number; perPage?: number } }>(
+  fastify.get<{ Querystring: { page?: number; perPage?: number; q?: string } }>(
     '/urls',
     {
       preHandler: [requireApiKey],
@@ -23,13 +23,14 @@ export async function urlRoutes(fastify: FastifyInstance) {
           properties: {
             page: { type: 'integer', minimum: 1 },
             perPage: { type: 'integer', minimum: 1, maximum: 50 },
+            q: { type: 'string' },
           },
         },
       },
     },
     async (request, reply) => {
       const { page, perPage, offset } = parsePagination(request.query)
-      const { data, meta } = await getUrlList(page, perPage, offset)
+      const { data, meta } = await getUrlList(page, perPage, offset, request.query.q)
       return reply.send({
         data: data.map((url) => ({
           ...url,

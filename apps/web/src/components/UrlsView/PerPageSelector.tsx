@@ -8,11 +8,13 @@ const StyledPerPageSelector = styled.select`
   border-radius: 4px;
 `
 
-export function PerPageSelector({ perPage }: { perPage: number }) {
+export function PerPageSelector({ perPage, q }: { perPage: number; q?: string }) {
   const router = useRouter()
 
   function handleChange(e: React.ChangeEvent<HTMLSelectElement>) {
-    router.push(`/urls?page=1&perPage=${e.target.value}`)
+    const params = new URLSearchParams({ page: '1', perPage: e.target.value })
+    if (q) params.set('q', q)
+    router.push(`/urls?${params.toString()}`)
   }
 
   return (

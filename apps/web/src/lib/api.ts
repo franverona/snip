@@ -61,8 +61,11 @@ export class ApiError extends Error {
 }
 
 export const api = {
-  getUrls: (page: number, perPage: number): Promise<UrlList> =>
-    apiFetch(`/urls?page=${page}&perPage=${perPage}`),
+  getUrls: (page: number, perPage: number, q?: string): Promise<UrlList> => {
+    const params = new URLSearchParams({ page: String(page), perPage: String(perPage) })
+    if (q) params.set('q', q)
+    return apiFetch(`/urls?${params.toString()}`)
+  },
 
   createUrl: (input: CreateUrlInput): Promise<CreateUrlResponse> =>
     proxyFetch('/api/proxy/urls', {
