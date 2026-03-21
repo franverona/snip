@@ -54,10 +54,11 @@ Keep this table up to date when adding, removing, or changing env vars. Also upd
 
 ### Web (`apps/web`)
 
-| Variable                  | Required | Default                 | Description                               |
-| ------------------------- | -------- | ----------------------- | ----------------------------------------- |
-| `NEXT_PUBLIC_API_URL`     | No       | `http://localhost:3001` | API base URL, accessible from the browser |
-| `NEXT_TELEMETRY_DISABLED` | No       | `1`                     | Set to `1` to disable Next.js telemetry   |
+| Variable                  | Required | Default                 | Description                                                                                                                                        |
+| ------------------------- | -------- | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_API_URL`     | No       | `http://localhost:3001` | API base URL baked into the browser bundle. Used for client-side fetches                                                                           |
+| `API_URL`                 | No       | `NEXT_PUBLIC_API_URL`   | API base URL for server-side (SSR) fetches. In Docker, set to the internal service URL (e.g. `http://api:3001`) so SSR can reach the API container |
+| `NEXT_TELEMETRY_DISABLED` | No       | `1`                     | Set to `1` to disable Next.js telemetry                                                                                                            |
 
 ## Code style
 

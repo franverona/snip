@@ -10,6 +10,83 @@ services:
       - '5432:5432'
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U snip']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    profiles: [dev]
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+      target: dev
+    environment:
+      DATABASE_URL: postgresql://snip:snip@db:5432/snip
+      IP_HASH_SECRET: dev-secret-change-in-production
+      CORS_ORIGIN: http://localhost:3000
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - '3001:3001'
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/apps/api/node_modules
+
+  web:
+    profiles: [dev]
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      target: dev
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:3001
+      API_URL: http://api:3001
+    depends_on:
+      - api
+    ports:
+      - '3000:3000'
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/apps/web/node_modules
+      - /app/apps/web/.next
+
+  api-prod:
+    profiles: [prod]
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+      target: prod
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://snip:snip@db:5432/snip}
+      IP_HASH_SECRET: ${IP_HASH_SECRET}
+      CORS_ORIGIN: ${CORS_ORIGIN}
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - '3001:3001'
+
+  web-prod:
+    profiles: [prod]
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      target: prod
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001}
+    restart: unless-stopped
+    environment:
+      API_URL: http://api-prod:3001
+    depends_on:
+      - api-prod
+    ports:
+      - '3000:3000'
 
 volumes:
   pgdata:
