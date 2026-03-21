@@ -1,5 +1,5 @@
 import ipaddr from 'ipaddr.js'
-import { eq, count, and, gte, sql, desc } from 'drizzle-orm'
+import { eq, count, and, gte, sql, desc, or, ilike } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 import { db } from '../db/client.js'
 import { urls, clicks, type Url, type Click } from '../db/schema.js'
@@ -211,8 +211,10 @@ export async function deleteUrl(slug: string): Promise<boolean> {
   return result.length > 0
 }
 
-export async function getUrlList(page: number, perPage: number, offset: number) {
-  const [rows, count] = await Promise.all([
+export async function getUrlList(page: number, perPage: number, offset: number, q?: string) {
+  const filter = q ? or(ilike(urls.slug, `%${q}%`), ilike(urls.originalUrl, `%${q}%`)) : undefined
+
+  const [rows, countResult] = await Promise.all([
     db
       .select({
         id: urls.id,
@@ -225,13 +227,17 @@ export async function getUrlList(page: number, perPage: number, offset: number) 
         createdAt: urls.createdAt,
       })
       .from(urls)
+      .where(filter)
       .orderBy(desc(urls.createdAt))
       .limit(perPage)
       .offset(offset),
-    db.select({ count: sql<number>`cast(count(*) as int)` }).from(urls),
+    db
+      .select({ count: sql<number>`cast(count(*) as int)` })
+      .from(urls)
+      .where(filter),
   ])
 
-  const total = count[0]!.count
+  const total = countResult[0]!.count
   return {
     data: rows.map(toUrlRecord),
     meta: {

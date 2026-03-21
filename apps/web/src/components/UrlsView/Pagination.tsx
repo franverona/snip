@@ -64,16 +64,24 @@ const CurrentPage = styled.div`
   color: #6b7280;
 `
 
+function buildPageUrl(page: number, perPage: number, q?: string) {
+  const params = new URLSearchParams({ page: String(page), perPage: String(perPage) })
+  if (q) params.set('q', q)
+  return `?${params.toString()}`
+}
+
 export function Pagination({
   page,
   perPage,
   total,
   totalPages,
+  q,
 }: {
   page: number
   perPage: number
   total: number
   totalPages: number
+  q?: string
 }) {
   const prevPage = page - 1
   const nextPage = page + 1
@@ -91,7 +99,7 @@ export function Pagination({
           </PageButtonDisabled>
         ) : (
           <PageButton
-            href={`?page=${prevPage}&perPage=${perPage}`}
+            href={buildPageUrl(prevPage, perPage, q)}
             onClick={() => window.scrollTo({ top: 0 })}
             aria-label="Previous page"
           >
@@ -105,7 +113,7 @@ export function Pagination({
           </PageButtonDisabled>
         ) : (
           <PageButton
-            href={`?page=${nextPage}&perPage=${perPage}`}
+            href={buildPageUrl(nextPage, perPage, q)}
             onClick={() => window.scrollTo({ top: 0 })}
             aria-label="Next page"
           >

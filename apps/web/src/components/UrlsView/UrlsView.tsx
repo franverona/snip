@@ -3,6 +3,7 @@ import { Pagination } from './Pagination'
 import { Table } from './Table'
 import styled from 'styled-components'
 import { PerPageSelector } from './PerPageSelector'
+import { SearchForm } from './SearchForm'
 
 const EmptyPlaceholder = styled.div`
   text-align: center;
@@ -10,28 +11,42 @@ const EmptyPlaceholder = styled.div`
   font-size: 0.875rem;
 `
 
+const ControlsBar = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+`
+
 const PerPageWrapper = styled.div`
   display: flex;
   align-items: center;
-  justify-content: flex-end;
   gap: 0.5rem;
-  margin-bottom: 1rem;
   font-size: 0.875rem;
+  flex-shrink: 0;
 `
 
-export function UrlsView({ data }: { data: UrlList }) {
-  if (data.meta.totalPages === 0 || data.meta.page > data.meta.totalPages) {
-    return <EmptyPlaceholder>No results</EmptyPlaceholder>
-  }
+export function UrlsView({ data, q }: { data: UrlList; q?: string }) {
+  const noResults = data.meta.totalPages === 0 || data.meta.page > data.meta.totalPages
 
   return (
     <div>
-      <PerPageWrapper>
-        <PerPageSelector perPage={data.meta.perPage} />
-        Items per page
-      </PerPageWrapper>
-      <Table data={data.data} />
-      <Pagination {...data.meta} />
+      <ControlsBar>
+        <SearchForm key={q ?? ''} q={q} perPage={data.meta.perPage} />
+        <PerPageWrapper>
+          <PerPageSelector perPage={data.meta.perPage} q={q} />
+          Items per page
+        </PerPageWrapper>
+      </ControlsBar>
+      {noResults ? (
+        <EmptyPlaceholder>{q ? `No results for "${q}"` : 'No results'}</EmptyPlaceholder>
+      ) : (
+        <>
+          <Table data={data.data} />
+          <Pagination {...data.meta} q={q} />
+        </>
+      )}
     </div>
   )
 }

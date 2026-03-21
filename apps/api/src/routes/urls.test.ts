@@ -118,6 +118,36 @@ describe('GET /urls', () => {
       totalPages: 1,
     })
   })
+
+  it('passes q param to getUrlList when provided', async () => {
+    vi.mocked(getUrlList).mockResolvedValue({
+      data: [mockUrlRecord],
+      meta: { page: 1, perPage: 20, total: 1, totalPages: 1 },
+    })
+
+    const res = await app.inject({ method: 'GET', url: '/urls?q=example' })
+
+    expect(res.statusCode).toBe(200)
+    expect(getUrlList).toHaveBeenCalledWith(
+      expect.any(Number),
+      expect.any(Number),
+      expect.any(Number),
+      'example',
+    )
+  })
+
+  it('returns empty results when q matches nothing', async () => {
+    vi.mocked(getUrlList).mockResolvedValue({
+      data: [],
+      meta: { page: 1, perPage: 20, total: 0, totalPages: 0 },
+    })
+
+    const res = await app.inject({ method: 'GET', url: '/urls?q=nomatch' })
+
+    expect(res.statusCode).toBe(200)
+    expect(res.json().data).toEqual([])
+    expect(res.json().meta.total).toBe(0)
+  })
 })
 
 describe('POST /urls', () => {
