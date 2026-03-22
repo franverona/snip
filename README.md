@@ -19,6 +19,8 @@ A self-hosted URL shortener that turns long, unwieldy links into clean and share
 - [Scripts](#scripts)
 - [Environment variables](#environment-variables)
 - [API reference](#api-reference)
+  - [POST /urls](#post-urls)
+  - [GET /:slug](#get-slug)
 - [Database schema](#database-schema)
 
 ## Stack
@@ -254,13 +256,19 @@ The dashboard password protects the web UI; the API key protects the API itself 
 
 ## API reference
 
-| Method   | Path                | Description                                |
-| -------- | ------------------- | ------------------------------------------ |
-| `POST`   | `/urls`             | Create a short URL                         |
-| `GET`    | `/:slug`            | Redirect to original URL (302 / 404 / 410) |
-| `GET`    | `/urls/:slug/stats` | Click statistics for a slug                |
-| `DELETE` | `/urls/:slug`       | Delete a short URL                         |
-| `GET`    | `/health`           | Health check with DB connectivity          |
+An interactive API reference (powered by [Scalar](https://scalar.com)) is available at `GET /docs` when the API is running (e.g. http://localhost:3001/docs in development). The table below is a quick reference; the `/docs` page includes full request/response schemas and a live sandbox.
+
+| Method   | Path                | Auth required | Description                       |
+| -------- | ------------------- | ------------- | --------------------------------- |
+| `POST`   | `/urls`             | Yes           | Create a short URL                |
+| `GET`    | `/urls`             | Yes           | List short URLs (paginated)       |
+| `GET`    | `/urls/:slug/stats` | Yes           | Click statistics for a slug       |
+| `GET`    | `/preview/:slug`    | Yes           | URL metadata without redirecting  |
+| `DELETE` | `/urls/:slug`       | Yes           | Delete a short URL                |
+| `GET`    | `/:slug`            | No            | Redirect to original URL          |
+| `GET`    | `/health`           | No            | Health check with DB connectivity |
+
+"Auth required" means an `Authorization: Bearer <key>` header is needed when `API_KEY` is set (see [API key](#api-key)).
 
 ### POST /urls
 
@@ -272,7 +280,17 @@ The dashboard password protects the web UI; the API key protects the API itself 
 }
 ```
 
-`customSlug` and `expiresAt` are optional.
+`customSlug` and `expiresAt` are optional. Returns `201` with the created record, or:
+
+| Status | Reason                                                                      |
+| ------ | --------------------------------------------------------------------------- |
+| `400`  | Invalid body or URL points to this service or resolves to a private address |
+| `409`  | `customSlug` is already taken                                               |
+| `422`  | URL hostname could not be resolved via DNS                                  |
+
+### GET /:slug
+
+Serves an HTML page with OG meta tags and a `meta-refresh` redirect to the original URL. Also records the click fire-and-forget. Returns `404` if the slug doesn't exist or `410` (with `Cache-Control: public, max-age=60`) if the URL has expired.
 
 ## Database schema
 
