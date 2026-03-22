@@ -8,7 +8,11 @@ import { urlRoutes } from './routes/urls.js'
 import { redirectRoutes } from './routes/redirect.js'
 import { startScheduler } from './scheduler.js'
 
-const fastify = Fastify({ logger: true })
+const isDev = process.env['NODE_ENV'] !== 'production'
+
+const fastify = Fastify({
+  logger: isDev ? { transport: { target: 'pino-pretty' } } : true,
+})
 await fastify.register(import('@fastify/rate-limit'), {
   global: true,
   max: 120,
@@ -70,7 +74,7 @@ process.on('SIGINT', shutdown)
 
 try {
   await fastify.listen({ port: env.PORT, host: '0.0.0.0' })
-  console.log(`API running on port ${env.PORT}`)
+  fastify.log.info({ port: env.PORT }, 'server started')
   schedulerInterval = startScheduler(fastify.log)
 } catch (err) {
   fastify.log.error(err)
