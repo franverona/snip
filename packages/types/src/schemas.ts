@@ -16,6 +16,8 @@ export const CreateUrlInputSchema = z.object({
     .regex(/^[a-zA-Z0-9_-]+$/, 'Slug can only contain letters, numbers, hyphens, and underscores')
     .optional(),
   expiresAt: z.iso.datetime().optional(),
+  title: z.string().max(200).optional(),
+  description: z.string().max(500).optional(),
 })
 
 export const SlugParamSchema = z.object({

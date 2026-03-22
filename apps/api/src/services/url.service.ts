@@ -96,7 +96,13 @@ export async function createUrl(input: CreateUrlInput, baseUrl: string) {
     throw new Error('PRIVATE_ADDRESS')
   }
 
-  const { title, description } = await fetchPageMeta(input.originalUrl)
+  let title: string | null = input.title ?? null
+  let description: string | null = input.description ?? null
+  if (title === null || description === null) {
+    const meta = await fetchPageMeta(input.originalUrl)
+    if (title === null) title = meta.title
+    if (description === null) description = meta.description
+  }
 
   for (let attempt = 0; attempt < 3; attempt++) {
     const slug = input.customSlug ?? nanoid(8)
