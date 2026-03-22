@@ -25,21 +25,23 @@ const Field = styled.div`
 const Label = styled.label`
   font-size: 0.875rem;
   font-weight: 500;
-  color: #374151;
+  color: ${({ theme }) => theme.colors.textSecondary};
 `
 
 const Hint = styled.span`
-  color: #9ca3af;
+  color: ${({ theme }) => theme.colors.textHint};
   font-weight: 400;
 `
 
 const Input = styled.input`
   width: 100%;
-  border: 1px solid #d1d5db;
+  border: 1px solid ${({ theme }) => theme.colors.inputBorder};
   border-radius: 0.375rem;
   padding: 0.5rem 0.75rem;
   font-size: 0.875rem;
   outline: none;
+  background: ${({ theme }) => theme.colors.surface};
+  color: ${({ theme }) => theme.colors.textPrimary};
   transition:
     border-color 0.15s,
     box-shadow 0.15s;
@@ -66,24 +68,24 @@ const SubmitButton = styled(Button)`
 
 const FieldErrorMessage = styled.p`
   font-size: 0.75rem;
-  color: #b91c1c;
+  color: ${({ theme }) => theme.colors.errorText};
   margin: 0;
 `
 
 const ErrorBox = styled.div`
   margin-top: 1rem;
-  border: 1px solid #fca5a5;
-  background: #fef2f2;
+  border: 1px solid ${({ theme }) => theme.colors.errorBorder};
+  background: ${({ theme }) => theme.colors.errorBg};
   border-radius: 0.375rem;
   padding: 0.75rem 1rem;
   font-size: 0.875rem;
-  color: #b91c1c;
+  color: ${({ theme }) => theme.colors.errorText};
 `
 
 const ResultBox = styled.div`
   margin-top: 1.5rem;
-  border: 1px solid #a7f3d0;
-  background: #ecfdf5;
+  border: 1px solid ${({ theme }) => theme.colors.successBorder};
+  background: ${({ theme }) => theme.colors.successBg};
   border-radius: 0.5rem;
   padding: 1rem;
 `
@@ -91,7 +93,7 @@ const ResultBox = styled.div`
 const ResultTitle = styled.p`
   font-size: 0.875rem;
   font-weight: 500;
-  color: #065f46;
+  color: ${({ theme }) => theme.colors.successText};
   margin-bottom: 1rem;
 `
 
@@ -127,14 +129,15 @@ const ShortLink = styled.a`
   white-space: nowrap;
   font-family: monospace;
   font-size: 0.875rem;
-  color: #2563eb;
+  color: ${({ theme }) => theme.colors.accent};
   text-decoration: underline;
 `
 
 const ActionButton = styled.button`
   flex-shrink: 0;
-  border: 1px solid #d1d5db;
-  background: #fff;
+  border: 1px solid ${({ theme }) => theme.colors.inputBorder};
+  background: ${({ theme }) => theme.colors.surface};
+  color: ${({ theme }) => theme.colors.textPrimary};
   border-radius: 0.25rem;
   padding: 0.25rem 0.75rem;
   font-size: 0.75rem;
@@ -144,7 +147,7 @@ const ActionButton = styled.button`
   width: 100%;
 
   &:hover {
-    background: #f9fafb;
+    background: ${({ theme }) => theme.colors.surfaceHover};
   }
 `
 
@@ -152,7 +155,7 @@ const StatsLink = styled.a`
   display: block;
   margin-top: 0.75rem;
   font-size: 0.75rem;
-  color: #2563eb;
+  color: ${({ theme }) => theme.colors.accent};
 
   &:hover {
     text-decoration: underline;
@@ -324,7 +327,13 @@ export function ShortenForm() {
       {result && (
         <ResultBox>
           <ResultTitle>Your short URL is ready!</ResultTitle>
-          <QRCodeSVG height={100} width={100} title={result.shortUrl} value={result.shortUrl} />
+          <QRCodeSVG
+            height={100}
+            width={100}
+            title={result.shortUrl}
+            value={result.shortUrl}
+            style={{ background: '#fff', padding: '0.375rem', borderRadius: 4 }}
+          />
           <QRCodeCanvas
             ref={qrCanvasRef}
             height={256}

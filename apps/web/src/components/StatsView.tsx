@@ -26,19 +26,19 @@ const PageTitle = styled.h1`
 
   span {
     font-family: monospace;
-    color: #2563eb;
+    color: ${({ theme }) => theme.colors.accent};
   }
 `
 
 const SubText = styled.p`
   font-size: 0.875rem;
-  color: #6b7280;
+  color: ${({ theme }) => theme.colors.textMuted};
   margin-bottom: 2rem;
 `
 
 const Card = styled.div`
-  border: 1px solid #e5e7eb;
-  background: #fff;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  background: ${({ theme }) => theme.colors.surface};
   border-radius: 0.5rem;
   padding: 1rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
@@ -49,7 +49,7 @@ const CardLabel = styled.p`
   font-size: 0.7rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #9ca3af;
+  color: ${({ theme }) => theme.colors.textHint};
   margin-bottom: 0.25rem;
 `
 
@@ -65,17 +65,21 @@ const DetailsGrid = styled.div`
 `
 
 const DetailsCard = styled.div`
-  border: 1px solid #e5e7eb;
-  background: #fff;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  background: ${({ theme }) => theme.colors.surface};
   border-radius: 0.5rem;
   padding: 1rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 `
 
 const QRCode = styled(QRCodeSVG)`
+  display: block;
   width: 100%;
   height: auto;
   margin: 1rem 0;
+  padding: 0.5rem;
+  background: #fff;
+  border-radius: 4px;
 
   @media (min-width: 480px) {
     margin: 0.25rem 0;
@@ -85,8 +89,9 @@ const QRCode = styled(QRCodeSVG)`
 const DownloadButton = styled.button`
   margin-top: 0.5rem;
   width: 100%;
-  border: 1px solid #d1d5db;
-  background: #fff;
+  border: 1px solid ${({ theme }) => theme.colors.inputBorder};
+  background: ${({ theme }) => theme.colors.surface};
+  color: ${({ theme }) => theme.colors.textPrimary};
   border-radius: 0.25rem;
   padding: 0.25rem 0;
   font-size: 0.7rem;
@@ -95,13 +100,13 @@ const DownloadButton = styled.button`
   transition: background 0.1s;
 
   &:hover {
-    background: #f9fafb;
+    background: ${({ theme }) => theme.colors.surfaceHover};
   }
 `
 
 const OriginalLink = styled.a`
   font-size: 0.875rem;
-  color: #2563eb;
+  color: ${({ theme }) => theme.colors.accent};
   text-decoration: underline;
   word-break: break-all;
 `
@@ -118,8 +123,8 @@ const StatsGrid = styled.div`
 `
 
 const StatCard = styled.div`
-  border: 1px solid #e5e7eb;
-  background: #fff;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  background: ${({ theme }) => theme.colors.surface};
   border-radius: 0.5rem;
   padding: 1rem;
   text-align: center;
@@ -129,12 +134,12 @@ const StatCard = styled.div`
 const StatValue = styled.p`
   font-size: 2rem;
   font-weight: 700;
-  color: #2563eb;
+  color: ${({ theme }) => theme.colors.accent};
 `
 
 const StatLabel = styled.p`
   font-size: 0.8rem;
-  color: #6b7280;
+  color: ${({ theme }) => theme.colors.textMuted};
   margin-top: 0.25rem;
 `
 
@@ -149,12 +154,12 @@ const BarRow = styled.div`
 const BarLabel = styled.span`
   width: 6rem;
   flex-shrink: 0;
-  color: #6b7280;
+  color: ${({ theme }) => theme.colors.textMuted};
 `
 
 const BarTrack = styled.div`
   flex: 1;
-  background: #f3f4f6;
+  background: ${({ theme }) => theme.colors.barTrack};
   border-radius: 9999px;
   height: 0.75rem;
   overflow: hidden;
@@ -163,7 +168,7 @@ const BarTrack = styled.div`
 const BarFill = styled.div<{ $pct: number }>`
   height: 100%;
   width: ${(p) => p.$pct}%;
-  background: #3b82f6;
+  background: ${({ theme }) => theme.colors.barFill};
   border-radius: 9999px;
   transition: width 0.4s ease;
 `
@@ -172,16 +177,16 @@ const BarCount = styled.span`
   width: 2.5rem;
   text-align: right;
   font-family: monospace;
-  color: #374151;
+  color: ${({ theme }) => theme.colors.textSecondary};
 `
 
 const ClickRow = styled.div`
   display: flex;
   justify-content: space-between;
   font-size: 0.75rem;
-  color: #6b7280;
+  color: ${({ theme }) => theme.colors.textMuted};
   padding: 0.25rem 0;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid ${({ theme }) => theme.colors.borderLight};
 
   &:last-child {
     border-bottom: none;
@@ -193,7 +198,7 @@ const BackLink = styled.a`
   text-align: center;
   margin-top: 2rem;
   font-size: 0.875rem;
-  color: #2563eb;
+  color: ${({ theme }) => theme.colors.accent};
 
   &:hover {
     text-decoration: underline;
@@ -201,10 +206,10 @@ const BackLink = styled.a`
 `
 
 const ExpiredBanner = styled.div`
-  background-color: #fff3e0;
-  border: 1px solid #ed6c02;
+  background-color: ${({ theme }) => theme.colors.warningBg};
+  border: 1px solid ${({ theme }) => theme.colors.warningBorder};
   border-radius: 6px;
-  color: #b45309;
+  color: ${({ theme }) => theme.colors.warningText};
   padding: 0.625rem 0.875rem;
   font-size: 0.8125rem;
   margin-bottom: 0.75rem;

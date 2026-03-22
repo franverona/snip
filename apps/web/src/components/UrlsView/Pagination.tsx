@@ -10,7 +10,7 @@ const Wrapper = styled.div`
   gap: 1rem;
   font-size: 0.8125rem;
   padding: 0.75rem 0.5rem 0;
-  border-top: 1px solid #f3f4f6;
+  border-top: 1px solid ${({ theme }) => theme.colors.borderLight};
 
   @media (max-width: 480px) {
     flex-direction: column;
@@ -20,7 +20,7 @@ const Wrapper = styled.div`
 `
 
 const TotalResults = styled.div`
-  color: #6b7280;
+  color: ${({ theme }) => theme.colors.textMuted};
   font-weight: 500;
   white-space: nowrap;
 `
@@ -37,7 +37,6 @@ const pageButtonBase = `
   gap: 0.25rem;
   padding: 0.3rem 0.75rem;
   border-radius: 5px;
-  border: 1px solid #e5e7eb;
   font-size: 0.8125rem;
   font-weight: 500;
   text-decoration: none;
@@ -46,21 +45,23 @@ const pageButtonBase = `
 
 const PageButton = styled(Link)`
   ${pageButtonBase}
-  color: #374151;
-  background: #fff;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  background: ${({ theme }) => theme.colors.surface};
+  border: 1px solid ${({ theme }) => theme.colors.border};
   transition: all 0.15s ease;
 
   &:hover {
-    color: #2563eb;
-    border-color: #bfdbfe;
-    background: #eff6ff;
+    color: ${({ theme }) => theme.colors.accent};
+    border-color: ${({ theme }) => theme.colors.accentBorder};
+    background: ${({ theme }) => theme.colors.accentBg};
   }
 `
 
 const PageButtonDisabled = styled.button`
   ${pageButtonBase}
-  color: #d1d5db;
-  background: #f9fafb;
+  color: ${({ theme }) => theme.colors.pageButtonDisabledColor};
+  background: ${({ theme }) => theme.colors.surfaceHover};
+  border: 1px solid ${({ theme }) => theme.colors.border};
   cursor: default;
 `
 
@@ -68,7 +69,7 @@ const CurrentPage = styled.div`
   padding: 0.3rem 0.75rem;
   font-size: 0.8125rem;
   font-weight: 500;
-  color: #6b7280;
+  color: ${({ theme }) => theme.colors.textMuted};
 `
 
 function buildPageUrl(page: number, perPage: number, q?: string) {

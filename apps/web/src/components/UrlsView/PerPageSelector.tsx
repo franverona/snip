@@ -4,8 +4,10 @@ import { useRouter } from 'next/navigation'
 import styled from 'styled-components'
 
 const StyledPerPageSelector = styled.select`
-  border-color: #e5e7eb;
+  border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: 4px;
+  background: ${({ theme }) => theme.colors.surface};
+  color: ${({ theme }) => theme.colors.textPrimary};
 `
 
 export function PerPageSelector({ perPage, q }: { perPage: number; q?: string }) {

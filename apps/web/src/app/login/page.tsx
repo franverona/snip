@@ -16,37 +16,39 @@ const Card = styled.div`
   width: 100%;
   max-width: 360px;
   padding: 2rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: 8px;
-  background: #ffffff;
+  background: ${({ theme }) => theme.colors.surface};
 `
 
 const Title = styled.h1`
   font-size: 1.25rem;
   font-weight: 700;
   margin-bottom: 1.5rem;
-  color: #111827;
+  color: ${({ theme }) => theme.colors.textPrimary};
 `
 
 const Label = styled.label`
   display: block;
   font-size: 0.875rem;
   font-weight: 500;
-  color: #374151;
+  color: ${({ theme }) => theme.colors.textSecondary};
   margin-bottom: 0.375rem;
 `
 
 const Input = styled.input`
   width: 100%;
   padding: 0.5rem 0.75rem;
-  border: 1px solid #d1d5db;
+  border: 1px solid ${({ theme }) => theme.colors.inputBorder};
   border-radius: 6px;
   font-size: 0.875rem;
   outline: none;
   box-sizing: border-box;
+  background: ${({ theme }) => theme.colors.surface};
+  color: ${({ theme }) => theme.colors.textPrimary};
 
   &:focus {
-    border-color: #2563eb;
+    border-color: ${({ theme }) => theme.colors.accent};
     box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
   }
 `
@@ -58,13 +60,13 @@ const Button = styled.button`
   font-size: 0.875rem;
   font-weight: 600;
   color: #ffffff;
-  background: #2563eb;
+  background: ${({ theme }) => theme.colors.accent};
   border: none;
   border-radius: 6px;
   cursor: pointer;
 
   &:hover {
-    background: #1d4ed8;
+    background: ${({ theme }) => theme.colors.accentHover};
   }
 
   &:disabled {
@@ -76,7 +78,7 @@ const Button = styled.button`
 const ErrorMsg = styled.p`
   margin-top: 0.75rem;
   font-size: 0.875rem;
-  color: #dc2626;
+  color: ${({ theme }) => theme.colors.errorText};
 `
 
 function LoginForm() {

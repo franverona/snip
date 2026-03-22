@@ -15,7 +15,8 @@ const Overlay = styled.div`
 `
 
 const Dialog = styled.div`
-  background: #fff;
+  background: ${({ theme }) => theme.colors.surface};
+  color: ${({ theme }) => theme.colors.textPrimary};
   border-radius: 0.5rem;
   padding: 1.5rem;
   width: 100%;
@@ -33,7 +34,7 @@ const DialogTitle = styled.h2`
 
 const DialogMessage = styled.p`
   font-size: 0.875rem;
-  color: #6b7280;
+  color: ${({ theme }) => theme.colors.textMuted};
   margin-bottom: 1.25rem;
 `
 
@@ -44,8 +45,8 @@ const DialogActions = styled.div`
 `
 
 const CancelButton = styled.button`
-  background: #f3f4f6;
-  color: #374151;
+  background: ${({ theme }) => theme.colors.cancelBg};
+  color: ${({ theme }) => theme.colors.cancelText};
   border: none;
   border-radius: 0.375rem;
   padding: 0.625rem 1rem;
@@ -55,7 +56,7 @@ const CancelButton = styled.button`
   transition: background 0.15s;
 
   &:hover {
-    background: #e5e7eb;
+    background: ${({ theme }) => theme.colors.cancelBgHover};
   }
 `
 

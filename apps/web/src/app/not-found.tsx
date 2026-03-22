@@ -1,11 +1,33 @@
+'use client'
+
+import styled from 'styled-components'
+
+const Wrapper = styled.div`
+  text-align: center;
+  padding: 4rem 0;
+`
+
+const Heading = styled.h1`
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+`
+
+const Message = styled.p`
+  color: ${({ theme }) => theme.colors.textMuted};
+  margin-bottom: 1.5rem;
+`
+
+const BackLink = styled.a`
+  color: ${({ theme }) => theme.colors.accent};
+`
+
 export default function NotFound() {
   return (
-    <div style={{ textAlign: 'center', padding: '4rem 0' }}>
-      <h1 style={{ fontSize: '2rem', fontWeight: 700, marginBottom: '0.5rem' }}>404</h1>
-      <p style={{ color: '#6b7280', marginBottom: '1.5rem' }}>That short URL does not exist.</p>
-      <a href="/" style={{ color: '#2563eb' }}>
-        ← Back to home
-      </a>
-    </div>
+    <Wrapper>
+      <Heading>404</Heading>
+      <Message>That short URL does not exist.</Message>
+      <BackLink href="/">← Back to home</BackLink>
+    </Wrapper>
   )
 }

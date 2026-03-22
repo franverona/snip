@@ -18,12 +18,17 @@ export const Skeleton = styled.div<{ $width?: Dimension; $height?: Dimension }>`
   position: relative;
   border-radius: 4px;
   overflow: hidden;
-  background-color: #e5e7eb;
+  background-color: ${({ theme }) => theme.colors.skeletonBg};
   width: ${({ $width }) => `${$width || '100%'}${typeof $width === 'number' ? 'px' : ''}`};
   height: ${({ $height }) => `${$height || '100%'}${typeof $height === 'number' ? 'px' : ''}`};
 
   &:after {
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      ${({ theme }) => theme.colors.skeletonShine},
+      transparent
+    );
     content: '';
     position: absolute;
     transform: translateX(-100%);

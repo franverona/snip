@@ -15,23 +15,24 @@ const Wrapper = styled.div`
 const Input = styled.input`
   padding: 0.3rem 0.625rem;
   font-size: 0.8125rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: 5px;
   outline: none;
   width: 220px;
+  background: ${({ theme }) => theme.colors.surface};
+  color: ${({ theme }) => theme.colors.textPrimary};
 
   @media (max-width: 480px) {
     width: 100%;
     flex: 1;
   }
-  color: #111827;
 
   &::placeholder {
-    color: #9ca3af;
+    color: ${({ theme }) => theme.colors.textHint};
   }
 
   &:focus {
-    border-color: #93c5fd;
+    border-color: ${({ theme }) => theme.colors.accentBorder};
     box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
   }
 `
@@ -40,7 +41,7 @@ const ClearButton = styled.button`
   padding: 0.3rem 0.625rem;
   font-size: 0.8125rem;
   font-weight: 500;
-  color: #6b7280;
+  color: ${({ theme }) => theme.colors.textMuted};
   background: none;
   border: none;
   cursor: pointer;
@@ -48,7 +49,7 @@ const ClearButton = styled.button`
   transition: color 0.15s ease;
 
   &:hover {
-    color: #111827;
+    color: ${({ theme }) => theme.colors.textPrimary};
   }
 `
 
