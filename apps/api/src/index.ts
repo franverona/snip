@@ -6,6 +6,7 @@ import { env } from './config.js'
 import { healthRoutes } from './routes/health.js'
 import { urlRoutes } from './routes/urls.js'
 import { redirectRoutes } from './routes/redirect.js'
+import { startScheduler } from './scheduler.js'
 
 const fastify = Fastify({ logger: true })
 await fastify.register(import('@fastify/rate-limit'), {
@@ -47,6 +48,7 @@ await fastify.register(ScalarApiReference, { routePrefix: '/docs' })
 await fastify.register(redirectRoutes)
 
 const SHUTDOWN_TIMEOUT_MS = 10_000
+let schedulerInterval: ReturnType<typeof setInterval> | undefined
 
 async function shutdown(signal: string) {
   fastify.log.info({ signal }, 'shutdown signal received')
@@ -57,6 +59,7 @@ async function shutdown(signal: string) {
   }, SHUTDOWN_TIMEOUT_MS)
   timer.unref()
 
+  if (schedulerInterval !== undefined) clearInterval(schedulerInterval)
   await fastify.close()
   clearTimeout(timer)
   process.exit(0)
@@ -68,6 +71,7 @@ process.on('SIGINT', shutdown)
 try {
   await fastify.listen({ port: env.PORT, host: '0.0.0.0' })
   console.log(`API running on port ${env.PORT}`)
+  schedulerInterval = startScheduler(fastify.log)
 } catch (err) {
   fastify.log.error(err)
   process.exit(1)
