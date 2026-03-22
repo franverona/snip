@@ -1,4 +1,10 @@
-import type { CreateUrlInput, CreateUrlResponse, UrlList, UrlStats } from '@snip/types'
+import type {
+  CreateUrlInput,
+  CreateUrlResponse,
+  UrlList,
+  UrlStats,
+  BulkDeleteUrlsResponse,
+} from '@snip/types'
 
 // API_URL is used for server-side fetches (e.g. http://api:3001 inside Docker).
 // NEXT_PUBLIC_API_URL is baked into the browser bundle and used for client-side fetches.
@@ -77,4 +83,11 @@ export const api = {
 
   deleteUrl: (slug: string): Promise<void> =>
     proxyFetch(`/api/proxy/urls/${slug}`, { method: 'DELETE' }),
+
+  deleteUrls: (slugs: string[]): Promise<BulkDeleteUrlsResponse> =>
+    proxyFetch('/api/proxy/urls', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ slugs }),
+    }),
 }

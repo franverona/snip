@@ -16,6 +16,7 @@ vi.mock('../services/url.service.js', () => ({
   createUrl: vi.fn(),
   getUrlStats: vi.fn(),
   deleteUrl: vi.fn(),
+  deleteUrls: vi.fn(),
   getUrlPreview: vi.fn(),
 }))
 
@@ -30,6 +31,7 @@ import {
   createUrl,
   getUrlStats,
   deleteUrl,
+  deleteUrls,
   getUrlList,
   getUrlPreview,
 } from '../services/url.service.js'
@@ -323,6 +325,51 @@ describe('DELETE /urls/:slug', () => {
   })
 })
 
+describe('DELETE /urls', () => {
+  it('returns 200 with deleted count', async () => {
+    vi.mocked(deleteUrls).mockResolvedValue({ deleted: 2 })
+
+    const res = await app.inject({
+      method: 'DELETE',
+      url: '/urls',
+      payload: { slugs: ['abc12345', 'xyz98765'] },
+    })
+
+    expect(res.statusCode).toBe(200)
+    expect(res.json().deleted).toBe(2)
+    expect(deleteUrls).toHaveBeenCalledWith(['abc12345', 'xyz98765'])
+  })
+
+  it('returns 400 for missing slugs', async () => {
+    const res = await app.inject({ method: 'DELETE', url: '/urls', payload: {} })
+
+    expect(res.statusCode).toBe(400)
+  })
+
+  it('returns 400 for empty slugs array', async () => {
+    const res = await app.inject({
+      method: 'DELETE',
+      url: '/urls',
+      payload: { slugs: [] },
+    })
+
+    expect(res.statusCode).toBe(400)
+  })
+
+  it('returns 0 deleted when no slugs match', async () => {
+    vi.mocked(deleteUrls).mockResolvedValue({ deleted: 0 })
+
+    const res = await app.inject({
+      method: 'DELETE',
+      url: '/urls',
+      payload: { slugs: ['notexist'] },
+    })
+
+    expect(res.statusCode).toBe(200)
+    expect(res.json().deleted).toBe(0)
+  })
+})
+
 describe('GET /preview/:slug', () => {
   it('returns 200 with preview', async () => {
     vi.mocked(getUrlPreview).mockResolvedValue(mockUrlRecord)
@@ -462,6 +509,32 @@ describe('API_KEY enforcement', () => {
       })
 
       expect(res.statusCode).toBe(204)
+    })
+  })
+
+  describe('DELETE /urls', () => {
+    it('returns 401 when API_KEY is set and no Authorization header is provided', async () => {
+      const res = await app.inject({
+        method: 'DELETE',
+        url: '/urls',
+        payload: { slugs: ['abc12345'] },
+      })
+
+      expect(res.statusCode).toBe(401)
+      expect(res.json().error).toBe('Unauthorized')
+    })
+
+    it('returns 200 when API_KEY is set and correct Authorization header is provided', async () => {
+      vi.mocked(deleteUrls).mockResolvedValue({ deleted: 1 })
+
+      const res = await app.inject({
+        method: 'DELETE',
+        url: '/urls',
+        payload: { slugs: ['abc12345'] },
+        headers: { authorization: 'Bearer test-api-key' },
+      })
+
+      expect(res.statusCode).toBe(200)
     })
   })
 })

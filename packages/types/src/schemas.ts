@@ -91,3 +91,11 @@ export const HealthResponseSchema = z.object({
   db: z.enum(['ok', 'error']),
   timestamp: z.iso.datetime(),
 })
+
+export const BulkDeleteUrlsInputSchema = z.object({
+  slugs: z.array(z.string().min(1)).min(1).max(100),
+})
+
+export const BulkDeleteUrlsResponseSchema = z.object({
+  deleted: z.number().int().nonnegative(),
+})

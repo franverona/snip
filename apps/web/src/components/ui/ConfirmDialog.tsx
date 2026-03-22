@@ -69,11 +69,11 @@ export function useConfirmDialog() {
     setConfig(options)
   }, [])
 
-  const confirmDialog = config ? (
-    <ConfirmDialog {...config} onCancel={() => setConfig(null)} />
-  ) : null
+  const closeConfirmDialog = useCallback(() => setConfig(null), [])
 
-  return { openConfirmDialog, confirmDialog }
+  const confirmDialog = config ? <ConfirmDialog {...config} onCancel={closeConfirmDialog} /> : null
+
+  return { openConfirmDialog, closeConfirmDialog, confirmDialog }
 }
 
 interface ConfirmDialogProps {

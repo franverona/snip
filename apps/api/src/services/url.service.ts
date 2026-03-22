@@ -1,5 +1,5 @@
 import ipaddr from 'ipaddr.js'
-import { eq, count, and, gte, sql, desc, or, ilike } from 'drizzle-orm'
+import { eq, count, and, gte, sql, desc, or, ilike, inArray } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 import { db } from '../db/client.js'
 import { urls, clicks, type Url, type Click } from '../db/schema.js'
@@ -215,6 +215,12 @@ export async function getUrlStats(slug: string, baseUrl: string): Promise<UrlSta
 export async function deleteUrl(slug: string): Promise<boolean> {
   const result = await db.delete(urls).where(eq(urls.slug, slug)).returning()
   return result.length > 0
+}
+
+export async function deleteUrls(slugs: string[]): Promise<{ deleted: number }> {
+  if (slugs.length === 0) return { deleted: 0 }
+  const result = await db.delete(urls).where(inArray(urls.slug, slugs)).returning()
+  return { deleted: result.length }
 }
 
 export async function getUrlList(page: number, perPage: number, offset: number, q?: string) {
