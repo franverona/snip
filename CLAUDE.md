@@ -15,6 +15,9 @@ Guidelines for Claude Code when working in this repository.
 - Fetch data in Server Components where possible; use Client Components (`'use client'`) only when interactivity is required.
 - The `StyledComponentsRegistry` in `apps/web/src/lib/StyledComponentsRegistry.tsx` is required for SSR — do not remove it.
 - Avoid locale-sensitive formatting (`toLocaleString()`, `toLocaleDateString()` with `undefined` locale) in components that are server-rendered — always pass an explicit locale (e.g. `'en-US'`) to prevent hydration mismatches.
+- **Theming**: light/dark mode is driven by CSS custom properties defined in `globals.css` (`:root` for light, `[data-theme='dark']` for dark). The styled-components theme (`apps/web/src/lib/theme.ts`) contains only `var(--color-x)` references — never hard-coded hex values — so styled-components generates identical class names on server and client. Do not add hex values to `theme.ts`. Any new color token must be added to both `:root` and `[data-theme='dark']` in `globals.css`, then referenced in `theme.ts`.
+- **FOUC prevention**: `apps/web/src/app/layout.tsx` contains an inline `<script>` in `<head>` that reads `localStorage` and sets `document.documentElement.dataset.theme` synchronously before React hydrates. `ThemeModeProvider` (`apps/web/src/lib/ThemeContext.tsx`) re-applies `data-theme` via `useLayoutEffect` to guard against React hydration removing the attribute. Do not remove either mechanism.
+- Any component that uses `theme.colors.*` interpolations must be a Client Component (`'use client'`) — styled-components context is not available in Server Components.
 
 ## Backend
 

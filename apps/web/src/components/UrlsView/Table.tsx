@@ -17,9 +17,9 @@ const Wrapper = styled.div`
 
 const Card = styled.div`
   border-radius: 6px;
-  background-color: #fff;
-  border: 1px solid #e5e7eb;
-  border-left: 3px solid #2563eb;
+  background-color: ${({ theme }) => theme.colors.surface};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-left: 3px solid ${({ theme }) => theme.colors.accent};
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
   transition:
     box-shadow 0.15s ease,
@@ -27,8 +27,8 @@ const Card = styled.div`
 
   &:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    border-color: #bfdbfe;
-    border-left-color: #2563eb;
+    border-color: ${({ theme }) => theme.colors.accentBorder};
+    border-left-color: ${({ theme }) => theme.colors.accent};
   }
 `
 
@@ -42,9 +42,9 @@ const CardRow = styled.div`
 const ExpiredBadge = styled.span`
   font-size: 0.65rem;
   font-weight: 700;
-  color: #b45309;
-  background: #fff3e0;
-  border: 1px solid #ed6c02;
+  color: ${({ theme }) => theme.colors.warningText};
+  background: ${({ theme }) => theme.colors.warningBg};
+  border: 1px solid ${({ theme }) => theme.colors.warningBorder};
   padding: 0.15rem 0.4rem;
   border-radius: 3px;
   letter-spacing: 0.04em;
@@ -65,7 +65,7 @@ const ShortLink = styled.a`
   display: flex;
   align-items: center;
   gap: 0.3rem;
-  color: #111827;
+  color: ${({ theme }) => theme.colors.textPrimary};
   font-weight: 600;
   font-size: 0.8125rem;
   text-decoration: none;
@@ -74,15 +74,15 @@ const ShortLink = styled.a`
   overflow: hidden;
 
   svg {
-    color: #9ca3af;
+    color: ${({ theme }) => theme.colors.textHint};
     flex-shrink: 0;
     transition: color 0.1s ease;
   }
 
   &:hover {
-    color: #2563eb;
+    color: ${({ theme }) => theme.colors.accent};
     svg {
-      color: #2563eb;
+      color: ${({ theme }) => theme.colors.accent};
     }
   }
 `
@@ -95,12 +95,12 @@ const ShortLinkText = styled.span`
 
 const DestinationLink = styled.a`
   font-size: 0.75rem;
-  color: #9ca3af;
+  color: ${({ theme }) => theme.colors.textMuted};
   text-decoration: none;
   word-break: break-all;
 
   &:hover {
-    color: #2563eb;
+    color: ${({ theme }) => theme.colors.accent};
     text-decoration: underline;
   }
 `
@@ -114,7 +114,7 @@ const CardMeta = styled.div`
 
 const DateLabel = styled.span`
   font-size: 0.75rem;
-  color: #9ca3af;
+  color: ${({ theme }) => theme.colors.textHint};
   white-space: nowrap;
 
   @media (max-width: 480px) {
@@ -128,19 +128,19 @@ const ViewStatsLink = styled(Link)`
   gap: 0.3rem;
   font-size: 0.75rem;
   font-weight: 500;
-  color: #6b7280;
+  color: ${({ theme }) => theme.colors.textMuted};
   padding: 0.2rem 0.5rem;
   border-radius: 5px;
-  border: 1px solid #e5e7eb;
-  background: #f9fafb;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  background: ${({ theme }) => theme.colors.surfaceHover};
   text-decoration: none;
   transition: all 0.15s ease;
   white-space: nowrap;
 
   &:hover {
-    color: #2563eb;
-    border-color: #bfdbfe;
-    background: #eff6ff;
+    color: ${({ theme }) => theme.colors.accent};
+    border-color: ${({ theme }) => theme.colors.accentBorder};
+    background: ${({ theme }) => theme.colors.accentBg};
   }
 `
 
@@ -150,17 +150,17 @@ const DeleteButton = styled.button`
   justify-content: center;
   padding: 0.2rem 0.4rem;
   border-radius: 5px;
-  border: 1px solid #e5e7eb;
-  background: #f9fafb;
-  color: #9ca3af;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  background: ${({ theme }) => theme.colors.surfaceHover};
+  color: ${({ theme }) => theme.colors.textHint};
   cursor: pointer;
   transition: all 0.15s ease;
   flex-shrink: 0;
 
   &:hover {
-    color: #b91c1c;
-    border-color: #fecaca;
-    background: #fef2f2;
+    color: ${({ theme }) => theme.colors.errorText};
+    border-color: ${({ theme }) => theme.colors.errorBorder};
+    background: ${({ theme }) => theme.colors.errorBg};
   }
 `
 

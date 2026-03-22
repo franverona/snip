@@ -5,30 +5,6 @@ import styled, { keyframes } from 'styled-components'
 
 type ToastType = 'default' | 'success' | 'error'
 
-type ColorShades = {
-  border: string
-  background: string
-  text: string
-}
-
-const COLORS: Record<ToastType, ColorShades> = {
-  default: {
-    border: '#e5e7eb',
-    background: '#fff',
-    text: 'inherit',
-  },
-  success: {
-    border: '#b9f8cf',
-    background: '#dcfce7',
-    text: '#0d542b',
-  },
-  error: {
-    border: '#ffc9c9',
-    background: '#ffe2e2',
-    text: '#82181a',
-  },
-}
-
 const slideUp = keyframes`
   from {
     opacity: 0;
@@ -50,9 +26,21 @@ const Wrapper = styled.div<{ $type: ToastType }>`
   right: 1.6rem;
   z-index: 50;
   border-radius: 4px;
-  border: ${({ $type }) => `1px solid ${COLORS[$type].border}`};
-  background: ${({ $type }) => COLORS[$type].background};
-  color: ${({ $type }) => COLORS[$type].text};
+  border: ${({ $type, theme }) => {
+    if ($type === 'success') return `1px solid ${theme.colors.toastSuccessBorder}`
+    if ($type === 'error') return `1px solid ${theme.colors.toastErrorBorder}`
+    return `1px solid ${theme.colors.toastDefaultBorder}`
+  }};
+  background: ${({ $type, theme }) => {
+    if ($type === 'success') return theme.colors.toastSuccessBg
+    if ($type === 'error') return theme.colors.toastErrorBg
+    return theme.colors.toastDefaultBg
+  }};
+  color: ${({ $type, theme }) => {
+    if ($type === 'success') return theme.colors.toastSuccessText
+    if ($type === 'error') return theme.colors.toastErrorText
+    return 'inherit'
+  }};
   padding: 0.8rem 1rem;
   box-shadow:
     0 10px 15px -3px rgb(0 0 0 / 0.07),
@@ -60,7 +48,7 @@ const Wrapper = styled.div<{ $type: ToastType }>`
   animation: ${slideUp} 0.2s ease-out;
 
   svg {
-    stroke: ${({ $type }) => COLORS[$type].text};
+    stroke: currentColor;
   }
 `
 
@@ -78,6 +66,8 @@ const CloseButton = styled.button`
   background-color: transparent;
   border: none;
   margin-left: 0.25rem;
+  color: inherit;
+  cursor: pointer;
 `
 
 type ToastContextValue = { showToast: (message: string, type?: ToastType) => void }

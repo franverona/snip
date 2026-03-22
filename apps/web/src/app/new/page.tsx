@@ -1,3 +1,5 @@
+'use client'
+
 import { ShortenForm } from '@/components/ShortenForm'
 import styled from 'styled-components'
 
@@ -8,7 +10,7 @@ const Title = styled.h1`
 `
 
 const Description = styled.p`
-  color: #6b7280;
+  color: ${({ theme }) => theme.colors.textMuted};
   margin-bottom: 2rem;
   font-size: 0.95rem;
 `

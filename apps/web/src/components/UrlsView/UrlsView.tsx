@@ -1,3 +1,5 @@
+'use client'
+
 import { type UrlList } from '@snip/types'
 import { Pagination } from './Pagination'
 import { Table } from './Table'
@@ -7,7 +9,7 @@ import { SearchForm } from './SearchForm'
 
 const EmptyPlaceholder = styled.div`
   text-align: center;
-  color: #6b7688;
+  color: ${({ theme }) => theme.colors.textMuted};
   font-size: 0.875rem;
 `
 

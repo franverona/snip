@@ -35,17 +35,11 @@ A self-hosted URL shortener that turns long, unwieldy links into clean and share
 
 ## Screenshots
 
-### URLs list
-
-<img src="./screenshots/urls-list.png" alt="URLs list" />
-
-### URL stats view
-
-<img src="./screenshots/url-stats.png" alt="URL stats view" />
-
-### Create URL
-
-<img src="./screenshots/create-url.png" alt="Create URL view" />
+| Light                                                                     | Dark                                                                    |
+| ------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| <img src="./screenshots/light-urls-list.png" alt="URLs list – light" />   | <img src="./screenshots/dark-urls-list.png" alt="URLs list – dark" />   |
+| <img src="./screenshots/light-url-stats.png" alt="URL stats – light" />   | <img src="./screenshots/dark-url-stats.png" alt="URL stats – dark" />   |
+| <img src="./screenshots/light-create-url.png" alt="Create URL – light" /> | <img src="./screenshots/dark-create-url.png" alt="Create URL – dark" /> |
 
 ## Getting started
 

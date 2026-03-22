@@ -17,13 +17,13 @@ const Wrapper = styled.div`
 const Title = styled.h2`
   font-size: 1.25rem;
   font-weight: 600;
-  color: #111827;
+  color: ${({ theme }) => theme.colors.textPrimary};
   margin: 0;
 `
 
 const Message = styled.p`
   font-size: 0.875rem;
-  color: #6b7688;
+  color: ${({ theme }) => theme.colors.textMuted};
   margin: 0;
   max-width: 360px;
 `
@@ -33,14 +33,14 @@ const RetryButton = styled.button`
   padding: 0.5rem 1.25rem;
   font-size: 0.875rem;
   font-weight: 600;
-  color: #2563eb;
-  background: #f6f8fe;
-  border: 1px solid #dbeafe;
+  color: ${({ theme }) => theme.colors.accent};
+  background: ${({ theme }) => theme.colors.accentBg};
+  border: 1px solid ${({ theme }) => theme.colors.accentBorder};
   border-radius: 6px;
   cursor: pointer;
 
   &:hover {
-    background: #dbeafe;
+    background: ${({ theme }) => theme.colors.accentBorder};
   }
 `
 
