@@ -14,3 +14,13 @@ export async function POST(request: NextRequest) {
   const data = await res.json()
   return NextResponse.json(data, { status: res.status })
 }
+
+export async function DELETE(request: NextRequest) {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+  if (API_KEY) headers['Authorization'] = `Bearer ${API_KEY}`
+
+  const body = await request.text()
+  const res = await fetch(`${API_URL}/urls`, { method: 'DELETE', headers, body })
+  const data = await res.json()
+  return NextResponse.json(data, { status: res.status })
+}

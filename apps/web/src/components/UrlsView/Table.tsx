@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { type UrlListRecord } from '@snip/types'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -15,11 +16,13 @@ const Wrapper = styled.div`
   margin-bottom: 1.5rem;
 `
 
-const Card = styled.div`
+const Card = styled.div<{ $selected?: boolean }>`
   border-radius: 6px;
   background-color: ${({ theme }) => theme.colors.surface};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-left: 3px solid ${({ theme }) => theme.colors.accent};
+  border: 1px solid
+    ${({ theme, $selected }) => ($selected ? theme.colors.accentBorder : theme.colors.border)};
+  border-left: 3px solid
+    ${({ theme, $selected }) => ($selected ? theme.colors.accent : theme.colors.accent)};
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
   transition:
     box-shadow 0.15s ease,
@@ -37,6 +40,15 @@ const CardRow = styled.div`
   align-items: flex-start;
   gap: 0.75rem;
   padding: 0.5rem 0.875rem;
+`
+
+const Checkbox = styled.input`
+  margin-top: 0.2rem;
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+  accent-color: ${({ theme }) => theme.colors.accent};
 `
 
 const ExpiredBadge = styled.span`
@@ -164,7 +176,67 @@ const DeleteButton = styled.button`
   }
 `
 
-function UrlCard({ url }: { url: UrlListRecord }) {
+const BulkBar = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.875rem;
+  background: ${({ theme }) => theme.colors.accentBg};
+  border: 1px solid ${({ theme }) => theme.colors.accentBorder};
+  border-radius: 6px;
+  margin-bottom: 0.375rem;
+`
+
+const BulkBarLabel = styled.span`
+  flex: 1;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: ${({ theme }) => theme.colors.accent};
+`
+
+const BulkDeleteButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  padding: 0.25rem 0.625rem;
+  border-radius: 5px;
+  border: 1px solid ${({ theme }) => theme.colors.errorBorder};
+  background: ${({ theme }) => theme.colors.errorBg};
+  color: ${({ theme }) => theme.colors.errorText};
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.errorBorder};
+  }
+`
+
+const ClearSelectionButton = styled.button`
+  font-size: 0.75rem;
+  color: ${({ theme }) => theme.colors.textMuted};
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+
+  &:hover {
+    color: ${({ theme }) => theme.colors.textPrimary};
+  }
+`
+
+function UrlCard({
+  url,
+  isSelected,
+  onToggleSelect,
+}: {
+  url: UrlListRecord
+  isSelected: boolean
+  onToggleSelect: (slug: string) => void
+}) {
   const isExpired = url.expiresAt ? new Date(url.expiresAt) < new Date() : false
   const expiresAtFormatted = url.expiresAt
     ? new Date(url.expiresAt).toLocaleDateString('en-US', { dateStyle: 'long' })
@@ -193,8 +265,14 @@ function UrlCard({ url }: { url: UrlListRecord }) {
 
   return (
     <>
-      <Card>
+      <Card $selected={isSelected}>
         <CardRow>
+          <Checkbox
+            type="checkbox"
+            checked={isSelected}
+            onChange={() => onToggleSelect(url.slug)}
+            aria-label={`Select /${url.slug}`}
+          />
           <CardUrls>
             {isExpired && (
               <ExpiredBadge title={`Expired ${expiresAtFormatted}`}>expired</ExpiredBadge>
@@ -285,11 +363,99 @@ function UrlCard({ url }: { url: UrlListRecord }) {
 }
 
 export function Table({ data }: { data: UrlListRecord[] }) {
+  const [selectedSlugs, setSelectedSlugs] = useState<Set<string>>(new Set())
+  const router = useRouter()
+  const { showToast } = useToast()
+  const { openConfirmDialog, closeConfirmDialog, confirmDialog } = useConfirmDialog()
+
+  const toggleSelect = (slug: string) => {
+    setSelectedSlugs((prev) => {
+      const next = new Set(prev)
+      if (next.has(slug)) next.delete(slug)
+      else next.add(slug)
+      return next
+    })
+  }
+
+  const allSelected = data.length > 0 && selectedSlugs.size === data.length
+  const someSelected = selectedSlugs.size > 0
+
+  const toggleAll = () => {
+    if (allSelected) {
+      setSelectedSlugs(new Set())
+    } else {
+      setSelectedSlugs(new Set(data.map((u) => u.slug)))
+    }
+  }
+
+  const handleBulkDelete = () => {
+    const count = selectedSlugs.size
+    openConfirmDialog({
+      title: `Delete ${count} URL${count === 1 ? '' : 's'}?`,
+      message: `This will permanently remove ${count} selected URL${count === 1 ? '' : 's'}. This action cannot be undone.`,
+      confirmLabel: `Delete ${count}`,
+      onConfirm: async () => {
+        closeConfirmDialog()
+        try {
+          const result = await api.deleteUrls(Array.from(selectedSlugs))
+          setSelectedSlugs(new Set())
+          showToast(`${result.deleted} URL${result.deleted === 1 ? '' : 's'} deleted`, 'success')
+          router.refresh()
+        } catch (err) {
+          console.error(err)
+          showToast('An error occurred when deleting URLs.', 'error')
+        }
+      },
+    })
+  }
+
   return (
-    <Wrapper>
-      {data.map((url) => (
-        <UrlCard key={url.id} url={url} />
-      ))}
-    </Wrapper>
+    <>
+      {someSelected && (
+        <BulkBar>
+          <Checkbox
+            type="checkbox"
+            checked={allSelected}
+            onChange={toggleAll}
+            aria-label="Select all URLs"
+          />
+          <BulkBarLabel>{selectedSlugs.size} selected</BulkBarLabel>
+          <ClearSelectionButton onClick={() => setSelectedSlugs(new Set())}>
+            Clear
+          </ClearSelectionButton>
+          <BulkDeleteButton onClick={handleBulkDelete}>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="11"
+              height="11"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <polyline points="3 6 5 6 21 6" />
+              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+              <path d="M10 11v6" />
+              <path d="M14 11v6" />
+              <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+            </svg>
+            Delete {selectedSlugs.size}
+          </BulkDeleteButton>
+        </BulkBar>
+      )}
+      <Wrapper>
+        {data.map((url) => (
+          <UrlCard
+            key={url.id}
+            url={url}
+            isSelected={selectedSlugs.has(url.slug)}
+            onToggleSelect={toggleSelect}
+          />
+        ))}
+      </Wrapper>
+      {confirmDialog}
+    </>
   )
 }

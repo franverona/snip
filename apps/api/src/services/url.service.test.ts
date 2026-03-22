@@ -64,6 +64,7 @@ import {
   recordClick,
   getUrlStats,
   deleteUrl,
+  deleteUrls,
   getUrlList,
   getUrlPreview,
 } from './url.service.js'
@@ -333,6 +334,26 @@ describe('deleteUrl', () => {
     mockDeleteReturning.mockResolvedValue([])
     const result = await deleteUrl('notexist')
     expect(result).toBe(false)
+  })
+})
+
+describe('deleteUrls', () => {
+  it('returns deleted count when slugs are found', async () => {
+    mockDeleteReturning.mockResolvedValue([mockUrlRow, mockUrlRow])
+    const result = await deleteUrls(['abc12345', 'xyz98765'])
+    expect(result).toEqual({ deleted: 2 })
+  })
+
+  it('returns 0 when no slugs match', async () => {
+    mockDeleteReturning.mockResolvedValue([])
+    const result = await deleteUrls(['notexist'])
+    expect(result).toEqual({ deleted: 0 })
+  })
+
+  it('returns 0 without hitting the DB when given an empty array', async () => {
+    const result = await deleteUrls([])
+    expect(result).toEqual({ deleted: 0 })
+    expect(mockDeleteReturning).not.toHaveBeenCalled()
   })
 })
 

@@ -1,9 +1,10 @@
 import type { FastifyInstance } from 'fastify'
-import { CreateUrlInputSchema } from '@snip/types'
+import { CreateUrlInputSchema, BulkDeleteUrlsInputSchema } from '@snip/types'
 import {
   createUrl,
   getUrlStats,
   deleteUrl,
+  deleteUrls,
   getUrlList,
   getUrlPreview,
 } from '../services/url.service.js'
@@ -184,6 +185,56 @@ export async function urlRoutes(fastify: FastifyInstance) {
         return reply.status(404).send({ error: 'URL not found' })
       }
       return reply.send(stats)
+    },
+  )
+
+  // DELETE /urls — bulk delete
+  fastify.delete(
+    '/urls',
+    {
+      preHandler: [requireApiKey],
+      schema: {
+        tags: ['URLs'],
+        summary: 'Bulk delete short URLs',
+        description: 'Deletes multiple short URLs by slug. Returns the count of deleted URLs.',
+        security: routeSecurity,
+        body: {
+          type: 'object',
+          required: ['slugs'],
+          properties: {
+            slugs: {
+              type: 'array',
+              items: { type: 'string', minLength: 1 },
+              minItems: 1,
+              maxItems: 100,
+              description: 'List of slugs to delete (1–100)',
+            },
+          },
+        },
+        response: {
+          200: {
+            description: 'Number of URLs deleted',
+            type: 'object',
+            properties: { deleted: { type: 'integer', minimum: 0 } },
+          },
+          400: {
+            description: 'Validation error',
+            type: 'object',
+            properties: { error: { type: 'string' }, message: { type: 'string' } },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      const parsed = BulkDeleteUrlsInputSchema.safeParse(request.body)
+      if (!parsed.success) {
+        return reply.status(400).send({
+          error: 'Validation error',
+          message: parsed.error.issues.map((i) => i.message).join(', '),
+        })
+      }
+      const result = await deleteUrls(parsed.data.slugs)
+      return reply.send(result)
     },
   )
 

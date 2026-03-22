@@ -260,6 +260,7 @@ An interactive API reference (powered by [Scalar](https://scalar.com)) is availa
 | `GET`    | `/urls/:slug/stats` | Yes           | Click statistics for a slug       |
 | `GET`    | `/preview/:slug`    | Yes           | URL metadata without redirecting  |
 | `DELETE` | `/urls/:slug`       | Yes           | Delete a short URL                |
+| `DELETE` | `/urls`             | Yes           | Bulk delete short URLs            |
 | `GET`    | `/:slug`            | No            | Redirect to original URL          |
 | `GET`    | `/health`           | No            | Health check with DB connectivity |
 
