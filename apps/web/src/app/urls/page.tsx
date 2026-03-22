@@ -1,6 +1,7 @@
 import { UrlsView } from '@/components/UrlsView'
 import { api } from '@/lib/api'
 import { type Metadata } from 'next'
+import { redirect } from 'next/navigation'
 
 export function generateMetadata(): Metadata {
   return {
@@ -27,6 +28,14 @@ export default async function Page({ searchParams }: Props) {
   const { page = '1', perPage = '25', q } = await searchParams
 
   const data = await getData(page, perPage, q)
+
+  const pageNumber = parseInt(page, 10)
+  if (data.meta.totalPages > 0 && pageNumber > data.meta.totalPages) {
+    redirect(`/urls?page=${data.meta.totalPages}`)
+  }
+  if (isNaN(pageNumber) || pageNumber < 1) {
+    redirect('/urls?page=1')
+  }
 
   return <UrlsView data={data} q={q} />
 }
