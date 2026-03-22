@@ -2,7 +2,11 @@
 
 import { type UrlListRecord } from '@snip/types'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import styled from 'styled-components'
+import { useToast } from '../Toast'
+import { useConfirmDialog } from '../ui'
+import { api } from '@/lib/api'
 
 const Wrapper = styled.div`
   display: flex;
@@ -140,80 +144,143 @@ const ViewStatsLink = styled(Link)`
   }
 `
 
+const DeleteButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.2rem 0.4rem;
+  border-radius: 5px;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+  color: #9ca3af;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+
+  &:hover {
+    color: #b91c1c;
+    border-color: #fecaca;
+    background: #fef2f2;
+  }
+`
+
 function UrlCard({ url }: { url: UrlListRecord }) {
   const isExpired = url.expiresAt ? new Date(url.expiresAt) < new Date() : false
   const expiresAtFormatted = url.expiresAt
     ? new Date(url.expiresAt).toLocaleDateString('en-US', { dateStyle: 'long' })
     : ''
+  const router = useRouter()
+  const { showToast } = useToast()
+  const { openConfirmDialog, confirmDialog } = useConfirmDialog()
+
+  const handleDelete = () => {
+    openConfirmDialog({
+      title: `Delete /${url.slug}?`,
+      message: 'After removing this URL, it will no longer be available.',
+      confirmLabel: 'Delete',
+      onConfirm: async () => {
+        try {
+          await api.deleteUrl(url.slug)
+          showToast('URL removed', 'success')
+          router.refresh()
+        } catch (err) {
+          console.error(err)
+          showToast('An error occurred when deleting the URL.', 'error')
+        }
+      },
+    })
+  }
 
   return (
-    <Card>
-      <CardRow>
-        <CardUrls>
-          {isExpired && (
-            <ExpiredBadge title={`Expired ${expiresAtFormatted}`}>expired</ExpiredBadge>
-          )}
-          <ShortLink
-            href={url.shortUrl}
-            title={url.shortUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label={`Open ${url.shortUrl}`}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="12"
-              height="12"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+    <>
+      <Card>
+        <CardRow>
+          <CardUrls>
+            {isExpired && (
+              <ExpiredBadge title={`Expired ${expiresAtFormatted}`}>expired</ExpiredBadge>
+            )}
+            <ShortLink
+              href={url.shortUrl}
+              title={url.shortUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`Open ${url.shortUrl}`}
             >
-              <path d="M15 3h6v6" />
-              <path d="M10 14 21 3" />
-              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-            </svg>
-            <ShortLinkText>{url.shortUrl}</ShortLinkText>
-          </ShortLink>
-          <DestinationLink
-            href={url.originalUrl}
-            title={url.originalUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label={`Open ${url.originalUrl}`}
-          >
-            {url.originalUrl}
-          </DestinationLink>
-        </CardUrls>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M15 3h6v6" />
+                <path d="M10 14 21 3" />
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+              </svg>
+              <ShortLinkText>{url.shortUrl}</ShortLinkText>
+            </ShortLink>
+            <DestinationLink
+              href={url.originalUrl}
+              title={url.originalUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`Open ${url.originalUrl}`}
+            >
+              {url.originalUrl}
+            </DestinationLink>
+          </CardUrls>
 
-        <CardMeta>
-          <DateLabel>
-            {url.expiresAt && !isExpired && <>Expires {expiresAtFormatted} · </>}
-            {new Date(url.createdAt).toLocaleDateString('en-US', { dateStyle: 'medium' })}
-          </DateLabel>
-          <ViewStatsLink href={`/stats/${url.slug}`}>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="11"
-              height="11"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <line x1="18" y1="20" x2="18" y2="10" />
-              <line x1="12" y1="20" x2="12" y2="4" />
-              <line x1="6" y1="20" x2="6" y2="14" />
-            </svg>
-            Stats
-          </ViewStatsLink>
-        </CardMeta>
-      </CardRow>
-    </Card>
+          <CardMeta>
+            <DateLabel>
+              {url.expiresAt && !isExpired && <>Expires {expiresAtFormatted} · </>}
+              {new Date(url.createdAt).toLocaleDateString('en-US', { dateStyle: 'medium' })}
+            </DateLabel>
+            <ViewStatsLink href={`/stats/${url.slug}`}>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="11"
+                height="11"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <line x1="18" y1="20" x2="18" y2="10" />
+                <line x1="12" y1="20" x2="12" y2="4" />
+                <line x1="6" y1="20" x2="6" y2="14" />
+              </svg>
+              Stats
+            </ViewStatsLink>
+            <DeleteButton onClick={handleDelete} aria-label={`Delete /${url.slug}`}>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="11"
+                height="11"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <polyline points="3 6 5 6 21 6" />
+                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                <path d="M10 11v6" />
+                <path d="M14 11v6" />
+                <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+              </svg>
+            </DeleteButton>
+          </CardMeta>
+        </CardRow>
+      </Card>
+      {confirmDialog}
+    </>
   )
 }
 
