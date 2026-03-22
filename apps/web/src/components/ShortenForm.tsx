@@ -62,6 +62,48 @@ const TwoCol = styled.div`
   }
 `
 
+const AdvancedToggle = styled.button`
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.8125rem;
+  color: ${({ theme }) => theme.colors.accent};
+  cursor: pointer;
+  text-align: left;
+  width: fit-content;
+
+  &:hover {
+    text-decoration: underline;
+  }
+`
+
+const AdvancedSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+`
+
+const Textarea = styled.textarea`
+  width: 100%;
+  border: 1px solid ${({ theme }) => theme.colors.inputBorder};
+  border-radius: 0.375rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  outline: none;
+  background: ${({ theme }) => theme.colors.surface};
+  color: ${({ theme }) => theme.colors.textPrimary};
+  resize: vertical;
+  font-family: inherit;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+
+  &:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+  }
+`
+
 const SubmitButton = styled(Button)`
   width: 100%;
 `
@@ -182,6 +224,9 @@ export function ShortenForm() {
   const [originalUrl, setOriginalUrl] = useState('')
   const [customSlug, setCustomSlug] = useState('')
   const [expiresAt, setExpiresAt] = useState('')
+  const [title, setTitle] = useState('')
+  const [description, setDescription] = useState('')
+  const [showAdvanced, setShowAdvanced] = useState(false)
   const [result, setResult] = useState<CreateUrlResponse | null>(null)
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({})
   const [apiError, setApiError] = useState<string | null>(null)
@@ -205,6 +250,8 @@ export function ShortenForm() {
       originalUrl,
       customSlug: customSlug || undefined,
       expiresAt: expiresAt ? new Date(expiresAt).toISOString() : undefined,
+      title: title || undefined,
+      description: description || undefined,
     }
 
     const validated = CreateUrlInputSchema.safeParse(body)
@@ -316,6 +363,44 @@ export function ShortenForm() {
             <FieldErrors errors={fieldErrors.expiresAt} />
           </Field>
         </TwoCol>
+
+        <AdvancedToggle type="button" onClick={() => setShowAdvanced((v) => !v)}>
+          {showAdvanced ? '▾ Hide advanced options' : '▸ Advanced options'}
+        </AdvancedToggle>
+
+        {showAdvanced && (
+          <AdvancedSection>
+            <Field>
+              <Label htmlFor="title">
+                Title <Hint>(optional — overrides scraped title)</Hint>
+              </Label>
+              <Input
+                id="title"
+                type="text"
+                placeholder="My awesome link"
+                maxLength={200}
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+              />
+              <FieldErrors errors={fieldErrors.title} />
+            </Field>
+
+            <Field>
+              <Label htmlFor="description">
+                Description <Hint>(optional — overrides scraped description)</Hint>
+              </Label>
+              <Textarea
+                id="description"
+                rows={3}
+                placeholder="A brief description of the destination page"
+                maxLength={500}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
+              <FieldErrors errors={fieldErrors.description} />
+            </Field>
+          </AdvancedSection>
+        )}
 
         <SubmitButton color="primary" type="submit" disabled={loading}>
           {loading ? 'Shortening…' : 'Shorten URL'}

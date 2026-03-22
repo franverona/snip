@@ -81,6 +81,16 @@ export async function urlRoutes(fastify: FastifyInstance) {
               format: 'date-time',
               description: 'Expiry timestamp in ISO 8601 format',
             },
+            title: {
+              type: 'string',
+              maxLength: 200,
+              description: 'Custom title — overrides scraped page title',
+            },
+            description: {
+              type: 'string',
+              maxLength: 500,
+              description: 'Custom description — overrides scraped page description',
+            },
           },
         },
         response: {

@@ -232,6 +232,42 @@ describe('createUrl', () => {
     expect(result.title).toBeNull()
     expect(result.description).toBeNull()
   })
+
+  it('uses provided title and description without scraping', async () => {
+    mockInsertReturning.mockResolvedValue([
+      { ...mockUrlRow, title: 'Custom Title', description: 'Custom desc' },
+    ])
+
+    const result = await createUrl(
+      { originalUrl: 'https://example.com', title: 'Custom Title', description: 'Custom desc' },
+      BASE_URL,
+    )
+
+    expect(result.title).toBe('Custom Title')
+    expect(result.description).toBe('Custom desc')
+    expect(mockFetch).not.toHaveBeenCalled()
+  })
+
+  it('scrapes only the missing field when only title is provided', async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      headers: { get: (h: string) => (h === 'content-type' ? 'text/html; charset=utf-8' : null) },
+      text: async () =>
+        '<html><head><meta name="description" content="Scraped desc"></head></html>',
+    })
+    mockInsertReturning.mockResolvedValue([
+      { ...mockUrlRow, title: 'Override Title', description: 'Scraped desc' },
+    ])
+
+    const result = await createUrl(
+      { originalUrl: 'https://example.com', title: 'Override Title' },
+      BASE_URL,
+    )
+
+    expect(result.title).toBe('Override Title')
+    expect(result.description).toBe('Scraped desc')
+    expect(mockFetch).toHaveBeenCalledTimes(1)
+  })
 })
 
 describe('findUrlBySlug', () => {

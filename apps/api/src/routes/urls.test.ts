@@ -244,6 +244,37 @@ describe('POST /urls', () => {
 
     expect(res.statusCode).toBe(500)
   })
+
+  it('accepts optional title and description fields', async () => {
+    vi.mocked(createUrl).mockResolvedValue({
+      ...mockUrlResult,
+      title: 'My Title',
+      description: 'My desc',
+    })
+
+    const res = await app.inject({
+      method: 'POST',
+      url: '/urls',
+      payload: { originalUrl: 'https://example.com', title: 'My Title', description: 'My desc' },
+    })
+
+    expect(res.statusCode).toBe(201)
+    expect(createUrl).toHaveBeenCalledWith(
+      expect.objectContaining({ title: 'My Title', description: 'My desc' }),
+      expect.any(String),
+    )
+  })
+
+  it('returns 400 when title exceeds 200 characters', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: '/urls',
+      payload: { originalUrl: 'https://example.com', title: 'a'.repeat(201) },
+    })
+
+    expect(res.statusCode).toBe(400)
+    expect(res.json().error).toBe('Validation error')
+  })
 })
 
 describe('GET /urls/:slug/stats', () => {
