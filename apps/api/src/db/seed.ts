@@ -1,6 +1,9 @@
+import pino from 'pino'
 import { nanoid } from 'nanoid'
 import { db } from './client.js'
 import { type Click, clicks, urls } from './schema.js'
+
+const log = pino({ transport: { target: 'pino-pretty' } })
 
 if (!process.env.DATABASE_URL) {
   throw new Error('DATABASE_URL environment variable is required')
@@ -22,7 +25,7 @@ const REFERERS = ['https://google.com', 'https://twitter.com', 'https://github.c
 await db.delete(clicks)
 await db.delete(urls)
 
-console.log('Seeding urls...')
+log.info('seeding urls')
 
 const randomUrls = [
   // edge cases — kept explicit so they're predictable
@@ -53,7 +56,7 @@ const randomUrls = [
 
 const insertedUrls = await db.insert(urls).values(randomUrls).returning()
 
-console.log('Seeding clicks...')
+log.info('seeding clicks')
 
 const randomClicks: Pick<Click, 'urlId' | 'clickedAt' | 'userAgent' | 'referer'>[] = []
 for (let i = 0; i < CLICK_COUNT; i++) {
@@ -70,6 +73,6 @@ for (let i = 0; i < CLICK_COUNT; i++) {
 
 await db.insert(clicks).values(randomClicks)
 
-console.log('Seed complete!')
+log.info('seed complete')
 
 process.exit(0)
