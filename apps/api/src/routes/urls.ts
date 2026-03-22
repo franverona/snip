@@ -11,6 +11,9 @@ import { env } from '../config.js'
 import { parsePagination } from '../lib/pagination.js'
 import { requireApiKey } from '../lib/api-key.js'
 
+// Reflects actual runtime behaviour: when API_KEY is unset the endpoints are public.
+const routeSecurity = env.API_KEY ? [{ bearerAuth: [] }] : []
+
 export async function urlRoutes(fastify: FastifyInstance) {
   // GET /urls — lists created URLs
   fastify.get<{ Querystring: { page?: number; perPage?: number; q?: string } }>(
@@ -18,12 +21,23 @@ export async function urlRoutes(fastify: FastifyInstance) {
     {
       preHandler: [requireApiKey],
       schema: {
+        tags: ['URLs'],
+        summary: 'List short URLs',
+        security: routeSecurity,
         querystring: {
           type: 'object',
           properties: {
-            page: { type: 'integer', minimum: 1 },
-            perPage: { type: 'integer', minimum: 1, maximum: 50 },
-            q: { type: 'string' },
+            page: { type: 'integer', minimum: 1, description: 'Page number (default: 1)' },
+            perPage: {
+              type: 'integer',
+              minimum: 1,
+              maximum: 50,
+              description: 'Results per page (default: 20, max: 50)',
+            },
+            q: {
+              type: 'string',
+              description: 'Search query — filters by slug, title, or original URL',
+            },
           },
         },
       },
@@ -46,9 +60,61 @@ export async function urlRoutes(fastify: FastifyInstance) {
     '/urls',
     {
       preHandler: [requireApiKey],
+      attachValidation: true,
       config: {
         rateLimit: {
           max: env.RATE_LIMIT_CREATE_PER_MINUTE,
+        },
+      },
+      schema: {
+        tags: ['URLs'],
+        summary: 'Create a short URL',
+        security: routeSecurity,
+        body: {
+          type: 'object',
+          required: ['originalUrl'],
+          properties: {
+            originalUrl: { type: 'string', format: 'uri', description: 'The URL to shorten' },
+            customSlug: { type: 'string', description: 'Custom slug (random if omitted)' },
+            expiresAt: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Expiry timestamp in ISO 8601 format',
+            },
+          },
+        },
+        response: {
+          201: {
+            description: 'Short URL created',
+            type: 'object',
+            properties: {
+              slug: { type: 'string' },
+              shortUrl: { type: 'string' },
+              originalUrl: { type: 'string' },
+              title: { type: 'string', nullable: true },
+              description: { type: 'string', nullable: true },
+              expiresAt: { type: 'string', format: 'date-time', nullable: true },
+              createdAt: { type: 'string', format: 'date-time' },
+            },
+          },
+          400: {
+            description: 'Validation error, redirect loop, or private address',
+            type: 'object',
+            properties: {
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
+          409: {
+            description: 'Slug already taken',
+            type: 'object',
+            properties: { error: { type: 'string' } },
+          },
+          422: {
+            description: 'URL hostname could not be resolved',
+            type: 'object',
+            properties: { error: { type: 'string' } },
+          },
         },
       },
     },
@@ -89,7 +155,18 @@ export async function urlRoutes(fastify: FastifyInstance) {
   // GET /urls/:slug/stats
   fastify.get<{ Params: { slug: string } }>(
     '/urls/:slug/stats',
-    { preHandler: [requireApiKey] },
+    {
+      preHandler: [requireApiKey],
+      schema: {
+        tags: ['URLs'],
+        summary: 'Get URL statistics',
+        security: routeSecurity,
+        params: {
+          type: 'object',
+          properties: { slug: { type: 'string', description: 'Short URL slug' } },
+        },
+      },
+    },
     async (request, reply) => {
       const { slug } = request.params
       const stats = await getUrlStats(slug, env.BASE_URL)
@@ -103,7 +180,19 @@ export async function urlRoutes(fastify: FastifyInstance) {
   // DELETE /urls/:slug
   fastify.delete<{ Params: { slug: string } }>(
     '/urls/:slug',
-    { preHandler: [requireApiKey] },
+    {
+      preHandler: [requireApiKey],
+      schema: {
+        tags: ['URLs'],
+        summary: 'Delete a short URL',
+        security: routeSecurity,
+        params: {
+          type: 'object',
+          properties: { slug: { type: 'string', description: 'Short URL slug' } },
+        },
+        response: { 204: { type: 'null', description: 'Deleted' } },
+      },
+    },
     async (request, reply) => {
       const { slug } = request.params
       const deleted = await deleteUrl(slug)
@@ -117,7 +206,19 @@ export async function urlRoutes(fastify: FastifyInstance) {
   // GET /preview/:slug
   fastify.get<{ Params: { slug: string } }>(
     '/preview/:slug',
-    { preHandler: [requireApiKey] },
+    {
+      preHandler: [requireApiKey],
+      schema: {
+        tags: ['URLs'],
+        summary: 'Preview a short URL',
+        description: 'Returns URL metadata without redirecting.',
+        security: routeSecurity,
+        params: {
+          type: 'object',
+          properties: { slug: { type: 'string', description: 'Short URL slug' } },
+        },
+      },
+    },
     async (request, reply) => {
       const { slug } = request.params
       try {

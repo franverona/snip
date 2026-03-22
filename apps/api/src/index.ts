@@ -1,5 +1,7 @@
 import Fastify from 'fastify'
 import cors from '@fastify/cors'
+import swagger from '@fastify/swagger'
+import ScalarApiReference from '@scalar/fastify-api-reference'
 import { env } from './config.js'
 import { healthRoutes } from './routes/health.js'
 import { urlRoutes } from './routes/urls.js'
@@ -10,14 +12,37 @@ await fastify.register(import('@fastify/rate-limit'), {
   global: true,
   max: 120,
   timeWindow: '1 minute',
+  allowList: (request) => request.url.startsWith('/docs'),
 })
 
 await fastify.register(cors, {
   origin: env.CORS_ORIGIN ?? env.BASE_URL,
 })
 
+await fastify.register(swagger, {
+  openapi: {
+    openapi: '3.0.0',
+    info: {
+      title: 'Snip API',
+      description: 'URL shortener API',
+      version: '1.0.0',
+    },
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          description:
+            'API key via `Authorization: Bearer <key>`. Only enforced when the `API_KEY` env var is set — omit entirely when running without one.',
+        },
+      },
+    },
+  },
+})
+
 await fastify.register(healthRoutes)
 await fastify.register(urlRoutes)
+await fastify.register(ScalarApiReference, { routePrefix: '/docs' })
 // Redirect must be last (wildcard /:slug)
 await fastify.register(redirectRoutes)
 
