@@ -1,12 +1,13 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { api, ApiError } from '@/lib/api'
 import { CreateUrlInputSchema, type CreateUrlResponse } from '@snip/types'
 import { Button } from './ui'
 import { useToast } from './Toast'
-import { QRCodeCanvas, QRCodeSVG } from 'qrcode.react'
+import { QRCodeSVG } from 'qrcode.react'
+import { QRDownloadButton } from './QRDownloadButton'
 
 // ---- Styled components ----
 
@@ -193,6 +194,24 @@ const ActionButton = styled.button`
   }
 `
 
+const ActionQRButton = styled(QRDownloadButton)`
+  flex-shrink: 0;
+  border: 1px solid ${({ theme }) => theme.colors.inputBorder};
+  background: ${({ theme }) => theme.colors.surface};
+  color: ${({ theme }) => theme.colors.textPrimary};
+  border-radius: 0.25rem;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.1s;
+  width: 100%;
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.surfaceHover};
+  }
+`
+
 const StatsLink = styled.a`
   display: block;
   margin-top: 0.75rem;
@@ -233,8 +252,6 @@ export function ShortenForm() {
   const [loading, setLoading] = useState(false)
   const [copied, setCopied] = useState(false)
   const [canShare, setCanShare] = useState(false)
-  const qrCanvasRef = useRef<HTMLCanvasElement>(null)
-
   useEffect(() => {
     setCanShare(!!navigator.share)
   }, [])
@@ -308,15 +325,6 @@ export function ShortenForm() {
     if (navigator.share) {
       await navigator.share({ url: result.shortUrl }).catch(() => {})
     }
-  }
-
-  function handleDownloadQR() {
-    const canvas = qrCanvasRef.current
-    if (!canvas || !result) return
-    const link = document.createElement('a')
-    link.download = `${result.slug}.png`
-    link.href = canvas.toDataURL('image/png')
-    link.click()
   }
 
   return (
@@ -419,13 +427,6 @@ export function ShortenForm() {
             value={result.shortUrl}
             style={{ background: '#fff', padding: '0.375rem', borderRadius: 4 }}
           />
-          <QRCodeCanvas
-            ref={qrCanvasRef}
-            height={256}
-            width={256}
-            value={result.shortUrl}
-            style={{ display: 'none' }}
-          />
           <ResultRow>
             <ResultRowLinks>
               <ShortLink href={result.shortUrl} target="_blank" rel="noopener noreferrer">
@@ -435,7 +436,9 @@ export function ShortenForm() {
             </ResultRowLinks>
             <ResultActions>
               <ActionButton onClick={handleCopy}>{copied ? 'Copied!' : 'Copy'}</ActionButton>
-              <ActionButton onClick={handleDownloadQR}>Download QR</ActionButton>
+              <ActionQRButton value={result.shortUrl} slug={result.slug} title={title}>
+                Download QR
+              </ActionQRButton>
               {canShare && <ActionButton onClick={handleShare}>Share</ActionButton>}
             </ResultActions>
           </ResultRow>
