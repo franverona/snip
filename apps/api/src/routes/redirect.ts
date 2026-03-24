@@ -110,8 +110,8 @@ export async function redirectRoutes(fastify: FastifyInstance) {
           ipHash,
           userAgent: request.headers['user-agent'] ?? undefined,
           referer: request.headers['referer'] ?? undefined,
-        }).catch(() => {
-          // ignore click recording errors
+        }).catch((err) => {
+          fastify.log.error({ err }, 'Failed to record click')
         })
       })
 
