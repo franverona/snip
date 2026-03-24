@@ -18,6 +18,7 @@ export const CreateUrlInputSchema = z.object({
   expiresAt: z.iso.datetime().optional(),
   title: z.string().max(200).optional(),
   description: z.string().max(500).optional(),
+  allowDuplicate: z.boolean().optional(),
 })
 
 export const SlugParamSchema = z.object({
@@ -42,9 +43,12 @@ export const CreateUrlResponseSchema = z.object({
   slug: z.string(),
   originalUrl: urlSchema,
   customSlug: z.boolean(),
+  title: z.string().nullable(),
+  description: z.string().nullable(),
   expiresAt: z.iso.datetime().nullable(),
   createdAt: z.iso.datetime(),
   shortUrl: urlSchema,
+  existing: z.boolean().optional(),
 })
 
 export const ClickRecordSchema = z.object({

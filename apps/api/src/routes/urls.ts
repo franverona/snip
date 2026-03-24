@@ -92,9 +92,28 @@ export async function urlRoutes(fastify: FastifyInstance) {
               maxLength: 500,
               description: 'Custom description — overrides scraped page description',
             },
+            allowDuplicate: {
+              type: 'boolean',
+              description:
+                'When true, skips duplicate detection and always creates a new short URL',
+            },
           },
         },
         response: {
+          200: {
+            description: 'URL already shortened — existing short URL returned',
+            type: 'object',
+            properties: {
+              slug: { type: 'string' },
+              shortUrl: { type: 'string' },
+              originalUrl: { type: 'string' },
+              title: { type: 'string', nullable: true },
+              description: { type: 'string', nullable: true },
+              expiresAt: { type: 'string', format: 'date-time', nullable: true },
+              createdAt: { type: 'string', format: 'date-time' },
+              existing: { type: 'boolean' },
+            },
+          },
           201: {
             description: 'Short URL created',
             type: 'object',
@@ -140,7 +159,7 @@ export async function urlRoutes(fastify: FastifyInstance) {
 
       try {
         const result = await createUrl(parsed.data, env.BASE_URL)
-        return reply.status(201).send(result)
+        return reply.status(result.existing ? 200 : 201).send(result)
       } catch (err) {
         if (err instanceof Error) {
           switch (err.message) {

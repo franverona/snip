@@ -93,6 +93,8 @@ beforeEach(() => {
   mockSelectChain.mockReturnValue(makeSelectChain([]))
   // Default: fetch fails gracefully so title is null
   mockFetch.mockResolvedValue({ ok: false })
+  // Default: no existing URL found (duplicate check returns nothing)
+  mockFindFirstUrl.mockResolvedValue(undefined)
 })
 
 describe('createUrl', () => {
@@ -191,6 +193,30 @@ describe('createUrl', () => {
     )
 
     expect(mockInsertReturning).toHaveBeenCalledTimes(3)
+  })
+
+  it('returns existing record with existing:true when originalUrl already exists', async () => {
+    mockFindFirstUrl.mockResolvedValue(mockUrlRow)
+
+    const result = await createUrl({ originalUrl: 'https://example.com' }, BASE_URL)
+
+    expect(result.existing).toBe(true)
+    expect(result.slug).toBe('abc12345')
+    expect(result.shortUrl).toBe('http://localhost:3001/abc12345')
+    expect(mockInsertReturning).not.toHaveBeenCalled()
+  })
+
+  it('creates a new URL when allowDuplicate is true even if originalUrl already exists', async () => {
+    mockFindFirstUrl.mockResolvedValue(mockUrlRow)
+    mockInsertReturning.mockResolvedValue([mockUrlRow])
+
+    const result = await createUrl(
+      { originalUrl: 'https://example.com', allowDuplicate: true },
+      BASE_URL,
+    )
+
+    expect(result.existing).toBeUndefined()
+    expect(mockInsertReturning).toHaveBeenCalledTimes(1)
   })
 
   it('stores the fetched page title and description on successful creation', async () => {

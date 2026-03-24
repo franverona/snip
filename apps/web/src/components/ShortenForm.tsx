@@ -288,7 +288,7 @@ export function ShortenForm() {
     try {
       const res = await api.createUrl(validated.data)
       setResult(res)
-      showToast('URL created', 'success')
+      showToast(res.existing ? 'Existing short URL returned' : 'URL created', 'success')
     } catch (err) {
       if (err instanceof ApiError) {
         setApiError(err.message)
@@ -419,7 +419,11 @@ export function ShortenForm() {
 
       {result && (
         <ResultBox>
-          <ResultTitle>Your short URL is ready!</ResultTitle>
+          <ResultTitle>
+            {result.existing
+              ? 'This URL was already shortened — here\u2019s your existing link.'
+              : 'Your short URL is ready!'}
+          </ResultTitle>
           <QRCodeSVG
             height={100}
             width={100}
