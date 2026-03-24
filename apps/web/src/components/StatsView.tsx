@@ -353,6 +353,23 @@ export function StatsView({ stats, slug }: Props) {
         </BarRow>
       </Card>
 
+      {stats.referrers.length > 0 && (
+        <Card>
+          <CardLabel style={{ marginBottom: '0.75rem' }}>Traffic sources</CardLabel>
+          {stats.referrers.map((r) => (
+            <BarRow key={r.domain}>
+              <BarLabel title={r.domain}>{r.domain}</BarLabel>
+              <BarTrack>
+                <BarFill
+                  $pct={Math.round((r.count / Math.max(stats.referrers[0]!.count, 1)) * 100)}
+                />
+              </BarTrack>
+              <BarCount>{r.count}</BarCount>
+            </BarRow>
+          ))}
+        </Card>
+      )}
+
       {stats.recentClicks.length > 0 && (
         <Card>
           <CardLabel style={{ marginBottom: '0.75rem' }}>Recent clicks</CardLabel>

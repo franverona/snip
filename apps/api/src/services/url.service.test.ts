@@ -309,6 +309,12 @@ describe('getUrlStats', () => {
     mockSelectChain
       .mockReturnValueOnce(makeSelectChain([{ total: 5, last24h: 2, last7d: 4 }]))
       .mockReturnValueOnce(makeSelectChain([]))
+      .mockReturnValueOnce(
+        makeSelectChain([
+          { domain: 'google.com', count: 3 },
+          { domain: 'Direct', count: 2 },
+        ]),
+      )
     mockFindManyClicks.mockResolvedValue([])
 
     const result = await getUrlStats('abc12345', 'http://localhost:3001')
@@ -320,6 +326,10 @@ describe('getUrlStats', () => {
     expect(result!.url.slug).toBe('abc12345')
     expect(result!.url.shortUrl).toBe('http://localhost:3001/abc12345')
     expect(result!.clicksByDay).toHaveLength(30)
+    expect(result!.referrers).toEqual([
+      { domain: 'google.com', count: 3 },
+      { domain: 'Direct', count: 2 },
+    ])
   })
 })
 

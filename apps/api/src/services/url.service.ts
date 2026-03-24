@@ -190,6 +190,18 @@ export async function getUrlStats(slug: string, baseUrl: string): Promise<UrlSta
     .groupBy(sql`date_trunc('day', ${clicks.clickedAt})`)
     .orderBy(sql`date_trunc('day', ${clicks.clickedAt})`)
 
+  // Extract hostname via split_part to avoid backslash escape issues in tagged template literals.
+  // split_part(referer, '://', 2) → 'host/path', split_part(..., '/', 1) → 'host'
+  const refDomain = sql<string>`case when ${clicks.referer} is null or ${clicks.referer} = '' then 'Direct' when ${clicks.referer} ~ '^https?://' then lower(split_part(split_part(${clicks.referer}, '://', 2), '/', 1)) else 'Direct' end`
+
+  const referrers = await db
+    .select({ domain: refDomain, count: count() })
+    .from(clicks)
+    .where(eq(clicks.urlId, url.id))
+    .groupBy(refDomain)
+    .orderBy(sql`count(*) desc`)
+    .limit(10)
+
   const dayMap = new Map<string, number>()
   for (let i = 29; i >= 0; i--) {
     const d = new Date(now)
@@ -209,6 +221,7 @@ export async function getUrlStats(slug: string, baseUrl: string): Promise<UrlSta
     clicksLast24h: Number(clickStats?.last24h ?? 0),
     clicksLast7d: Number(clickStats?.last7d ?? 0),
     recentClicks: recentClicks.map(toClickRecord),
+    referrers: referrers.map((r) => ({ domain: r.domain, count: Number(r.count) })),
   }
 }
 
