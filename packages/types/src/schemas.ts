@@ -79,6 +79,7 @@ export const UrlStatsSchema = z.object({
   clicksLast24h: z.number().int().nonnegative(),
   clicksLast7d: z.number().int().nonnegative(),
   recentClicks: z.array(ClickRecordSchema),
+  referrers: z.array(z.object({ domain: z.string(), count: z.number() })),
 })
 
 export const ErrorResponseSchema = z.object({

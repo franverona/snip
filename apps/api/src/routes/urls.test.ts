@@ -288,6 +288,7 @@ describe('GET /urls/:slug/stats', () => {
       clicksLast24h: 2,
       clicksLast7d: 5,
       recentClicks: [],
+      referrers: [],
     })
 
     const res = await app.inject({ method: 'GET', url: '/urls/abc12345/stats' })
