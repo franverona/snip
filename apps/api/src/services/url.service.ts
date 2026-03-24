@@ -3,7 +3,13 @@ import { eq, count, and, gte, sql, desc, or, ilike, inArray } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 import { db } from '../db/client.js'
 import { urls, clicks, type Url, type Click } from '../db/schema.js'
-import type { CreateUrlInput, UrlStats, ClickRecord, UrlRecord } from '@snip/types'
+import type {
+  CreateUrlInput,
+  CreateUrlResponse,
+  UrlStats,
+  ClickRecord,
+  UrlRecord,
+} from '@snip/types'
 import dns from 'node:dns/promises'
 import net from 'node:net'
 import { totalPages } from '../lib/pagination.js'
@@ -73,7 +79,10 @@ async function fetchPageMeta(url: string): Promise<PageMeta> {
   }
 }
 
-export async function createUrl(input: CreateUrlInput, baseUrl: string) {
+export async function createUrl(
+  input: CreateUrlInput,
+  baseUrl: string,
+): Promise<CreateUrlResponse> {
   const baseHost = new URL(baseUrl).host
   const { host, hostname } = new URL(input.originalUrl)
   if (host === baseHost) {
@@ -94,6 +103,19 @@ export async function createUrl(input: CreateUrlInput, baseUrl: string) {
   const isPrivate = addresses.some((ip) => ipaddr.parse(ip).range() !== 'unicast')
   if (isPrivate) {
     throw new Error('PRIVATE_ADDRESS')
+  }
+
+  if (!input.allowDuplicate) {
+    const existing = await db.query.urls.findFirst({
+      where: eq(urls.originalUrl, input.originalUrl),
+    })
+    if (existing) {
+      return {
+        ...toUrlRecord(existing),
+        shortUrl: `${baseUrl}/${existing.slug}`,
+        existing: true,
+      }
+    }
   }
 
   let title: string | null = input.title ?? null

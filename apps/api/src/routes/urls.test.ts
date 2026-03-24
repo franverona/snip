@@ -247,6 +247,33 @@ describe('POST /urls', () => {
     expect(res.statusCode).toBe(500)
   })
 
+  it('returns 200 with existing:true when URL already exists', async () => {
+    vi.mocked(createUrl).mockResolvedValue({ ...mockUrlResult, existing: true })
+
+    const res = await app.inject({
+      method: 'POST',
+      url: '/urls',
+      payload: { originalUrl: 'https://example.com' },
+    })
+
+    expect(res.statusCode).toBe(200)
+    expect(res.json().existing).toBe(true)
+    expect(res.json().shortUrl).toBe('http://localhost:3001/abc12345')
+  })
+
+  it('returns 201 and creates new URL when allowDuplicate is true', async () => {
+    vi.mocked(createUrl).mockResolvedValue(mockUrlResult)
+
+    const res = await app.inject({
+      method: 'POST',
+      url: '/urls',
+      payload: { originalUrl: 'https://example.com', allowDuplicate: true },
+    })
+
+    expect(res.statusCode).toBe(201)
+    expect(res.json().existing).toBeUndefined()
+  })
+
   it('accepts optional title and description fields', async () => {
     vi.mocked(createUrl).mockResolvedValue({
       ...mockUrlResult,
