@@ -1,13 +1,13 @@
 'use client'
 
-import { useRef } from 'react'
 import styled from 'styled-components'
 import type { UrlStats } from '@snip/types'
 import { Button, useConfirmDialog } from './ui'
 import { api } from '@/lib/api'
 import { useRouter } from 'next/navigation'
 import { useToast } from './Toast'
-import { QRCodeCanvas, QRCodeSVG } from 'qrcode.react'
+import { QRCodeSVG } from 'qrcode.react'
+import { QRDownloadButton } from './QRDownloadButton'
 
 // ---- Styled components ----
 
@@ -86,7 +86,7 @@ const QRCode = styled(QRCodeSVG)`
   }
 `
 
-const DownloadButton = styled.button`
+const DownloadButton = styled(QRDownloadButton)`
   margin-top: 0.5rem;
   width: 100%;
   border: 1px solid ${({ theme }) => theme.colors.inputBorder};
@@ -226,17 +226,6 @@ export function StatsView({ stats, slug }: Props) {
   const router = useRouter()
   const { showToast } = useToast()
   const { openConfirmDialog, confirmDialog } = useConfirmDialog()
-  const qrCanvasRef = useRef<HTMLCanvasElement>(null)
-
-  function handleDownloadQR() {
-    const canvas = qrCanvasRef.current
-    if (!canvas) return
-    const link = document.createElement('a')
-    link.download = `${slug}.png`
-    link.href = canvas.toDataURL('image/png')
-    link.click()
-  }
-
   const { url, totalClicks, clicksLast24h, clicksLast7d } = stats
   const maxClicks = Math.max(totalClicks, 1)
 
@@ -296,14 +285,9 @@ export function StatsView({ stats, slug }: Props) {
         <DetailsCard>
           <CardLabel>QR Code</CardLabel>
           <QRCode title={url.shortUrl} value={url.shortUrl} />
-          <QRCodeCanvas
-            ref={qrCanvasRef}
-            height={256}
-            width={256}
-            value={url.shortUrl}
-            style={{ display: 'none' }}
-          />
-          <DownloadButton onClick={handleDownloadQR}>Download PNG</DownloadButton>
+          <DownloadButton value={url.shortUrl} slug={slug} title={url.title}>
+            Download PNG
+          </DownloadButton>
         </DetailsCard>
         <DetailsCard>
           <CardLabel>Original URL</CardLabel>
