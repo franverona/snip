@@ -40,6 +40,11 @@ const CardRow = styled.div`
   align-items: flex-start;
   gap: 0.75rem;
   padding: 0.5rem 0.875rem;
+
+  @media (max-width: 480px) {
+    flex-wrap: wrap;
+    row-gap: 0.5rem;
+  }
 `
 
 const Checkbox = styled.input`
@@ -51,17 +56,28 @@ const Checkbox = styled.input`
   accent-color: ${({ theme }) => theme.colors.accent};
 `
 
-const ExpiredBadge = styled.span`
+const BadgeBase = `
   font-size: 0.65rem;
   font-weight: 700;
-  color: ${({ theme }) => theme.colors.warningText};
-  background: ${({ theme }) => theme.colors.warningBg};
-  border: 1px solid ${({ theme }) => theme.colors.warningBorder};
   padding: 0.15rem 0.4rem;
   border-radius: 3px;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   flex-shrink: 0;
+`
+
+const ExpiredBadge = styled.span`
+  ${BadgeBase}
+  color: ${({ theme }) => theme.colors.errorText};
+  background: ${({ theme }) => theme.colors.errorBg};
+  border: 1px solid ${({ theme }) => theme.colors.errorBorder};
+`
+
+const ExpiryWarnBadge = styled.span`
+  ${BadgeBase}
+  color: ${({ theme }) => theme.colors.warningText};
+  background: ${({ theme }) => theme.colors.warningBg};
+  border: 1px solid ${({ theme }) => theme.colors.warningBorder};
 `
 
 const CardUrls = styled.div`
@@ -70,7 +86,7 @@ const CardUrls = styled.div`
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 0.15rem;
+  gap: 0.3rem;
 `
 
 const ShortLink = styled.a`
@@ -122,6 +138,11 @@ const CardMeta = styled.div`
   align-items: center;
   gap: 0.5rem;
   flex-shrink: 0;
+
+  @media (max-width: 480px) {
+    width: 100%;
+    padding-left: calc(14px + 0.75rem);
+  }
 `
 
 const DateLabel = styled.span`
@@ -237,9 +258,16 @@ function UrlCard({
   isSelected: boolean
   onToggleSelect: (slug: string) => void
 }) {
-  const isExpired = url.expiresAt ? new Date(url.expiresAt) < new Date() : false
-  const expiresAtFormatted = url.expiresAt
-    ? new Date(url.expiresAt).toLocaleDateString('en-US', { dateStyle: 'long' })
+  const now = new Date()
+  const expiresAt = url.expiresAt ? new Date(url.expiresAt) : null
+  const isExpired = expiresAt ? expiresAt < now : false
+  const daysUntilExpiry =
+    expiresAt && !isExpired
+      ? Math.ceil((expiresAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+      : null
+  const isExpiringSoon = daysUntilExpiry !== null && daysUntilExpiry <= 7
+  const expiresAtFormatted = expiresAt
+    ? expiresAt.toLocaleDateString('en-US', { dateStyle: 'long' })
     : ''
   const router = useRouter()
   const { showToast } = useToast()
@@ -276,6 +304,11 @@ function UrlCard({
           <CardUrls>
             {isExpired && (
               <ExpiredBadge title={`Expired ${expiresAtFormatted}`}>expired</ExpiredBadge>
+            )}
+            {isExpiringSoon && (
+              <ExpiryWarnBadge title={`Expires ${expiresAtFormatted}`}>
+                expires in {daysUntilExpiry === 1 ? '1 day' : `${daysUntilExpiry} days`}
+              </ExpiryWarnBadge>
             )}
             <ShortLink
               href={url.shortUrl}
