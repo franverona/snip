@@ -1,6 +1,7 @@
 import ipaddr from 'ipaddr.js'
 import { eq, count, and, gte, sql, desc, or, ilike, inArray } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
+import { parse } from 'node-html-parser'
 import { db } from '../db/client.js'
 import { urls, clicks, type Url, type Click } from '../db/schema.js'
 import type { CreateUrlInput, UrlStats, ClickRecord, UrlRecord } from '@snip/types'
@@ -57,13 +58,13 @@ async function fetchPageMeta(url: string): Promise<PageMeta> {
       const contentType = res.headers.get('content-type') ?? ''
       if (!contentType.includes('text/html')) return { title: null, description: null }
       const html = await res.text()
-      const titleMatch = html.match(/<title[^>]*>([^<]*)<\/title>/i)
-      const title = titleMatch ? titleMatch[1]!.trim() || null : null
-      const descMatch =
-        html.match(/<meta\s+name="description"\s+content="([^"]*)"/i) ??
-        html.match(/<meta\s+content="([^"]*)"\s+name="description"/i) ??
-        html.match(/<meta\s+property="og:description"\s+content="([^"]*)"/i)
-      const description = descMatch ? descMatch[1]!.trim() || null : null
+      const root = parse(html)
+      const title = root.querySelector('title')?.text?.trim() || null
+      const description =
+        (
+          root.querySelector('meta[name="description"]')?.getAttribute('content') ??
+          root.querySelector('meta[property="og:description"]')?.getAttribute('content')
+        )?.trim() || null
       return { title, description }
     } finally {
       clearTimeout(timeout)
