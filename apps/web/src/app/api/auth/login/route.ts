@@ -1,3 +1,4 @@
+import { timingSafeEqual } from 'node:crypto'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { SESSION_COOKIE, computeSessionToken } from '@/lib/session'
@@ -9,7 +10,9 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json().catch(() => ({}))
-  if (body.password !== password) {
+  const provided = Buffer.from(body.password ?? '')
+  const expected = Buffer.from(password)
+  if (provided.length !== expected.length || !timingSafeEqual(provided, expected)) {
     return NextResponse.json({ error: 'Incorrect password' }, { status: 401 })
   }
 
