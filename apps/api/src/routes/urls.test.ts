@@ -7,6 +7,7 @@ vi.mock('../config.js', () => ({
   env: {
     BASE_URL: 'http://localhost:3001',
     RATE_LIMIT_CREATE_PER_MINUTE: 10,
+    RATE_LIMIT_BULK_DELETE_PER_MINUTE: 20,
     API_KEY: undefined as string | undefined,
   },
 }))

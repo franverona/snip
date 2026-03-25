@@ -212,6 +212,11 @@ export async function urlRoutes(fastify: FastifyInstance) {
     '/urls',
     {
       preHandler: [requireApiKey],
+      config: {
+        rateLimit: {
+          max: env.RATE_LIMIT_BULK_DELETE_PER_MINUTE,
+        },
+      },
       schema: {
         tags: ['URLs'],
         summary: 'Bulk delete short URLs',
