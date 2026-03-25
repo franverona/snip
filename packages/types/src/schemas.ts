@@ -13,7 +13,11 @@ export const CreateUrlInputSchema = z.object({
     .string()
     .min(3, 'Slug must be at least 3 characters')
     .max(50, 'Slug must be at most 50 characters')
-    .regex(/^[a-zA-Z0-9_-]+$/, 'Slug can only contain letters, numbers, hyphens, and underscores')
+    .regex(
+      /^[a-zA-Z0-9][a-zA-Z0-9_-]*[a-zA-Z0-9]$/,
+      'Slug must start and end with alphanumeric characters',
+    )
+    .refine((s) => !/[-_]{2}/.test(s), { message: 'Slug cannot contain consecutive separators' })
     .optional(),
   expiresAt: z.iso.datetime().optional(),
   title: z.string().max(200).optional(),
