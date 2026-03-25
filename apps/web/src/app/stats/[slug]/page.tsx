@@ -1,4 +1,4 @@
-import { api } from '@/lib/api'
+import { api, ApiError } from '@/lib/api'
 import { notFound } from 'next/navigation'
 import { StatsView } from '@/components/StatsView'
 import type { UrlStats } from '@snip/types'
@@ -10,7 +10,10 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
-  const stats = await api.getStats(slug).catch(() => null)
+  const stats = await api.getStats(slug).catch((err) => {
+    if (err instanceof ApiError && err.status === 404) return null
+    return null
+  })
   return {
     title: stats ? `Stats for /${slug} — snip` : 'Not found — snip',
     description: stats ? `${stats.url.originalUrl} · ${stats.totalClicks} clicks` : undefined,
@@ -23,8 +26,11 @@ export default async function StatsPage({ params }: Props) {
   let stats: UrlStats
   try {
     stats = await api.getStats(slug)
-  } catch {
-    notFound()
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 404) {
+      notFound()
+    }
+    throw err
   }
 
   return <StatsView stats={stats} slug={slug} />
