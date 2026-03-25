@@ -185,17 +185,18 @@ The `DATABASE_URL` defaults to the local `db` service (`postgresql://snip:snip@d
 
 ### API (`apps/api`)
 
-| Variable                       | Required | Default                 | Description                                                                                                                           |
-| ------------------------------ | -------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `DATABASE_URL`                 | **Yes**  | —                       | PostgreSQL connection string                                                                                                          |
-| `IP_HASH_SECRET`               | **Yes**  | —                       | HMAC-SHA-256 secret for hashing visitor IPs. Changing it invalidates all stored hashes and resets unique-visitor deduplication        |
-| `PORT`                         | No       | `3001`                  | Port the API server listens on                                                                                                        |
-| `BASE_URL`                     | No       | `http://localhost:3001` | Public URL of the API. Used as the CORS allowed origin fallback when `CORS_ORIGIN` is not set                                         |
-| `CORS_ORIGIN`                  | No       | `BASE_URL`              | Allowed CORS origin. In production, set this to the web app's origin — `BASE_URL` is the API's own URL and is not a safe fallback     |
-| `RATE_LIMIT_CREATE_PER_MINUTE` | No       | `10`                    | Max requests per minute for `POST /urls`                                                                                              |
-| `DATABASE_POOL_MAX`            | No       | `10`                    | Maximum number of connections in the database pool                                                                                    |
-| `API_KEY`                      | No       | —                       | When set, `POST /urls` and `DELETE /urls/:slug` require `Authorization: Bearer <key>`. Unset means those endpoints are public         |
-| `NODE_ENV`                     | No       | —                       | When set to `production`, log output is structured JSON (Pino default). Any other value enables `pino-pretty` for human-readable logs |
+| Variable                            | Required | Default                 | Description                                                                                                                           |
+| ----------------------------------- | -------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `DATABASE_URL`                      | **Yes**  | —                       | PostgreSQL connection string                                                                                                          |
+| `IP_HASH_SECRET`                    | **Yes**  | —                       | HMAC-SHA-256 secret for hashing visitor IPs. Changing it invalidates all stored hashes and resets unique-visitor deduplication        |
+| `PORT`                              | No       | `3001`                  | Port the API server listens on                                                                                                        |
+| `BASE_URL`                          | No       | `http://localhost:3001` | Public URL of the API. Used as the CORS allowed origin fallback when `CORS_ORIGIN` is not set                                         |
+| `CORS_ORIGIN`                       | No       | `BASE_URL`              | Allowed CORS origin. In production, set this to the web app's origin — `BASE_URL` is the API's own URL and is not a safe fallback     |
+| `RATE_LIMIT_CREATE_PER_MINUTE`      | No       | `10`                    | Max requests per minute for `POST /urls`                                                                                              |
+| `RATE_LIMIT_BULK_DELETE_PER_MINUTE` | No       | `20`                    | Max requests per minute for `DELETE /urls` (bulk delete)                                                                              |
+| `DATABASE_POOL_MAX`                 | No       | `10`                    | Maximum number of connections in the database pool                                                                                    |
+| `API_KEY`                           | No       | —                       | When set, `POST /urls` and `DELETE /urls/:slug` require `Authorization: Bearer <key>`. Unset means those endpoints are public         |
+| `NODE_ENV`                          | No       | —                       | When set to `production`, log output is structured JSON (Pino default). Any other value enables `pino-pretty` for human-readable logs |
 
 ### Web (`apps/web`)
 
