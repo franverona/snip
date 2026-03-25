@@ -100,6 +100,72 @@ describe('POST /api/proxy/urls — with API_KEY', () => {
   })
 })
 
+describe('POST/DELETE /api/proxy/urls — body size limit', () => {
+  let POST: (req: NextRequest) => Promise<Response>
+  let DELETE: (req: NextRequest) => Promise<Response>
+
+  beforeAll(async () => {
+    process.env['API_URL'] = 'http://localhost:3001'
+    process.env['API_KEY'] = 'test-key'
+    vi.resetModules()
+    const mod = await import('./route')
+    POST = mod.POST
+    DELETE = mod.DELETE
+  })
+
+  it('POST returns 413 when Content-Length exceeds 1 MB', async () => {
+    const req = new NextRequest('http://localhost/api/proxy/urls', {
+      method: 'POST',
+      body: 'x',
+      headers: { 'Content-Type': 'application/json', 'Content-Length': '1048577' },
+    })
+    const res = await POST(req)
+    expect(res.status).toBe(413)
+    const body = await res.json()
+    expect(body.error).toBe('Request body too large')
+  })
+
+  it('POST does not reject when Content-Length is exactly 1 MB', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({ status: 201, json: async () => ({ slug: 'abc' }) }),
+    )
+    const req = new NextRequest('http://localhost/api/proxy/urls', {
+      method: 'POST',
+      body: 'x',
+      headers: { 'Content-Type': 'application/json', 'Content-Length': '1048576' },
+    })
+    const res = await POST(req)
+    expect(res.status).toBe(201)
+  })
+
+  it('DELETE returns 413 when Content-Length exceeds 1 MB', async () => {
+    const req = new NextRequest('http://localhost/api/proxy/urls', {
+      method: 'DELETE',
+      body: 'x',
+      headers: { 'Content-Type': 'application/json', 'Content-Length': '2000000' },
+    })
+    const res = await DELETE(req)
+    expect(res.status).toBe(413)
+    const body = await res.json()
+    expect(body.error).toBe('Request body too large')
+  })
+
+  it('POST proceeds normally when Content-Length is absent', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({ status: 201, json: async () => ({ slug: 'abc' }) }),
+    )
+    const req = new NextRequest('http://localhost/api/proxy/urls', {
+      method: 'POST',
+      body: JSON.stringify({ originalUrl: 'https://example.com' }),
+      headers: { 'Content-Type': 'application/json' },
+    })
+    const res = await POST(req)
+    expect(res.status).toBe(201)
+  })
+})
+
 describe('POST /api/proxy/urls — without API_KEY', () => {
   let POST: (req: NextRequest) => Promise<Response>
 
