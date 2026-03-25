@@ -2,6 +2,13 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { SESSION_COOKIE, computeSessionToken } from '@/lib/session'
 
+let cachedToken: string | null = null
+
+async function getSessionToken(password: string) {
+  if (!cachedToken) cachedToken = await computeSessionToken(password)
+  return cachedToken
+}
+
 export async function proxy(request: NextRequest) {
   const password = process.env['DASHBOARD_PASSWORD']
   if (!password) return NextResponse.next()
@@ -13,7 +20,7 @@ export async function proxy(request: NextRequest) {
   }
 
   const cookie = request.cookies.get(SESSION_COOKIE)
-  const expected = await computeSessionToken(password)
+  const expected = await getSessionToken(password)
   if (cookie?.value === expected) {
     return NextResponse.next()
   }
