@@ -45,9 +45,9 @@ describe('pagination', () => {
 
     it('caps perPage if surpasses the maximum allowed value', () => {
       expect(parsePagination({ page: 3, perPage: 9999 })).toEqual({
-        perPage: 100,
+        perPage: 50,
         page: 3,
-        offset: 200,
+        offset: 100,
       })
     })
 

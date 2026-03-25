@@ -1,5 +1,5 @@
 const DEFAULT_PER_PAGE = 25
-const DEFAULT_MAX_PER_PAGE = 100
+const DEFAULT_MAX_PER_PAGE = 50
 const DEFAULT_PAGE = 1
 
 /**
