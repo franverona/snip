@@ -65,12 +65,23 @@ Follow Conventional Commits: `<type>(<scope>): <description>`. Allowed types: `f
 
 ## Testing
 
-- Tests live in `apps/api` alongside source files (`*.test.ts`).
+### API (`apps/api`)
+
+- Tests live alongside source files (`*.test.ts`).
 - Framework is **Vitest**. Run with `pnpm --filter api run test` (no database required — all DB calls are mocked).
 - `apps/api/src/db/__mocks__/client.ts` is the shared manual mock for `db/client.js`. Route tests call `vi.mock('../db/client.js')` with no factory to use it. Service tests override it with a custom factory via `vi.hoisted`.
 - Route tests use Fastify's `inject()` — no real HTTP server is started.
 - `apps/api/vitest.config.ts` sets a stub `DATABASE_URL` env var so `config.ts` doesn't throw at import time.
 - When adding a new route, add tests in `apps/api/src/routes/<name>.test.ts`. When adding a new service, add tests in `apps/api/src/services/<name>.test.ts`.
+
+### Web (`apps/web`)
+
+- Framework is **Vitest** + **React Testing Library**. Run with `pnpm --filter web run test` (no running server required).
+- `apps/web/vitest.config.ts` configures `node` environment by default. Component tests (`.test.tsx`) must opt in to jsdom with the `// @vitest-environment jsdom` docblock at the top of the file.
+- `apps/web/vitest.setup.ts` is the shared setup file: imports `@testing-library/jest-dom` matchers, calls `vi.unstubAllGlobals()` in `afterEach`, and stubs `HTMLCanvasElement.prototype.getContext` in jsdom so qrcode.react doesn't emit warnings.
+- Route handlers (Next.js proxy and auth routes) read env vars at module load time. Tests that need different env values use `vi.resetModules()` + dynamic `await import()` inside `beforeAll`, after setting `process.env` directly.
+- `@/lib/api` is mocked in component tests with `vi.mock('@/lib/api', factory)`. Wrap components under test with `ThemeProvider` (from `apps/web/src/lib/theme.ts`) and `ToastProvider` (from `apps/web/src/components/Toast.tsx`).
+- When adding a new Next.js proxy route, add tests in the same directory as the route file. When adding a new Client Component with non-trivial logic, add a `*.test.tsx` alongside it with `// @vitest-environment jsdom`.
 
 ## Adding a new API endpoint
 

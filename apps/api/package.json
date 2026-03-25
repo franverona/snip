@@ -13,8 +13,7 @@
     "seed": "tsx src/db/seed.ts",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "test": "vitest run"
   },
   "dependencies": {
     "@fastify/cors": "^10.0.2",
