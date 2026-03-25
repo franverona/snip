@@ -7,6 +7,7 @@ import {
   deleteUrls,
   getUrlList,
   getUrlPreview,
+  UrlFetchError,
 } from '../services/url.service.js'
 import { env } from '../config.js'
 import { parsePagination } from '../lib/pagination.js'
@@ -161,8 +162,8 @@ export async function urlRoutes(fastify: FastifyInstance) {
         const result = await createUrl(parsed.data, env.BASE_URL)
         return reply.status(result.existing ? 200 : 201).send(result)
       } catch (err) {
-        if (err instanceof Error) {
-          switch (err.message) {
+        if (err instanceof UrlFetchError) {
+          switch (err.code) {
             case 'REDIRECT_LOOP':
               return reply
                 .status(400)
@@ -175,6 +176,8 @@ export async function urlRoutes(fastify: FastifyInstance) {
               return reply
                 .status(400)
                 .send({ error: 'URL resolves to a private or reserved address' })
+            case 'EXPIRED':
+              break
           }
         }
         throw err
@@ -309,10 +312,15 @@ export async function urlRoutes(fastify: FastifyInstance) {
 
         return reply.send(url)
       } catch (err) {
-        if (err instanceof Error) {
-          switch (err.message) {
+        if (err instanceof UrlFetchError) {
+          switch (err.code) {
             case 'EXPIRED':
               return reply.status(410).send({ error: 'URL is expired' })
+            case 'REDIRECT_LOOP':
+            case 'UNRESOLVED_DNS':
+            case 'PRIVATE_ADDRESS':
+            case 'SLUG_TAKEN':
+              break
           }
         }
         throw err

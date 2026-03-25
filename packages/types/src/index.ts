@@ -31,3 +31,10 @@ export type UrlList = z.infer<typeof UrlListSchema>
 export type UrlListRecord = z.infer<typeof UrlListRecordSchema>
 export type BulkDeleteUrlsInput = z.infer<typeof BulkDeleteUrlsInputSchema>
 export type BulkDeleteUrlsResponse = z.infer<typeof BulkDeleteUrlsResponseSchema>
+
+export type UrlErrorCode =
+  | 'REDIRECT_LOOP'
+  | 'UNRESOLVED_DNS'
+  | 'PRIVATE_ADDRESS'
+  | 'SLUG_TAKEN'
+  | 'EXPIRED'

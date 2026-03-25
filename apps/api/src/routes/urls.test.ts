@@ -11,14 +11,18 @@ vi.mock('../config.js', () => ({
   },
 }))
 
-vi.mock('../services/url.service.js', () => ({
-  getUrlList: vi.fn(),
-  createUrl: vi.fn(),
-  getUrlStats: vi.fn(),
-  deleteUrl: vi.fn(),
-  deleteUrls: vi.fn(),
-  getUrlPreview: vi.fn(),
-}))
+vi.mock('../services/url.service.js', async () => {
+  const actual = await vi.importActual('../services/url.service.js')
+  return {
+    ...(actual as Record<string, unknown>),
+    getUrlList: vi.fn(),
+    createUrl: vi.fn(),
+    getUrlStats: vi.fn(),
+    deleteUrl: vi.fn(),
+    deleteUrls: vi.fn(),
+    getUrlPreview: vi.fn(),
+  }
+})
 
 vi.mock('../db/client.js')
 
@@ -34,6 +38,7 @@ import {
   deleteUrls,
   getUrlList,
   getUrlPreview,
+  UrlFetchError,
 } from '../services/url.service.js'
 import { parsePagination } from '../lib/pagination.js'
 import { env } from '../config.js'
@@ -184,7 +189,7 @@ describe('POST /urls', () => {
   })
 
   it('returns 400 for REDIRECT_LOOP', async () => {
-    vi.mocked(createUrl).mockRejectedValue(new Error('REDIRECT_LOOP'))
+    vi.mocked(createUrl).mockRejectedValue(new UrlFetchError('REDIRECT_LOOP'))
 
     const res = await app.inject({
       method: 'POST',
@@ -197,7 +202,7 @@ describe('POST /urls', () => {
   })
 
   it('returns 409 for SLUG_TAKEN', async () => {
-    vi.mocked(createUrl).mockRejectedValue(new Error('SLUG_TAKEN'))
+    vi.mocked(createUrl).mockRejectedValue(new UrlFetchError('SLUG_TAKEN'))
 
     const res = await app.inject({
       method: 'POST',
@@ -210,7 +215,7 @@ describe('POST /urls', () => {
   })
 
   it('returns 422 for UNRESOLVED_DNS', async () => {
-    vi.mocked(createUrl).mockRejectedValue(new Error('UNRESOLVED_DNS'))
+    vi.mocked(createUrl).mockRejectedValue(new UrlFetchError('UNRESOLVED_DNS'))
 
     const res = await app.inject({
       method: 'POST',
@@ -223,7 +228,7 @@ describe('POST /urls', () => {
   })
 
   it('returns 400 for PRIVATE_ADDRESS', async () => {
-    vi.mocked(createUrl).mockRejectedValue(new Error('PRIVATE_ADDRESS'))
+    vi.mocked(createUrl).mockRejectedValue(new UrlFetchError('PRIVATE_ADDRESS'))
 
     const res = await app.inject({
       method: 'POST',
@@ -417,7 +422,7 @@ describe('GET /preview/:slug', () => {
   })
 
   it('returns 410 if expired', async () => {
-    vi.mocked(getUrlPreview).mockRejectedValue(new Error('EXPIRED'))
+    vi.mocked(getUrlPreview).mockRejectedValue(new UrlFetchError('EXPIRED'))
 
     const res = await app.inject({ method: 'GET', url: '/preview/abc12345' })
 

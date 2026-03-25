@@ -10,6 +10,7 @@ import type {
   UrlStats,
   ClickRecord,
   UrlRecord,
+  UrlErrorCode,
 } from '@snip/types'
 import dns from 'node:dns/promises'
 import net from 'node:net'
@@ -46,6 +47,16 @@ function isUniqueConstraintError(err: unknown): boolean {
     'code' in err &&
     (err as Record<string, unknown>)['code'] === '23505'
   )
+}
+
+export class UrlFetchError extends Error {
+  constructor(
+    public readonly code: UrlErrorCode,
+    options?: ErrorOptions,
+  ) {
+    super(code, options)
+    this.name = 'UrlFetchError'
+  }
 }
 
 type PageMeta = { title: string | null; description: string | null }
@@ -87,7 +98,7 @@ export async function createUrl(
   const baseHost = new URL(baseUrl).host
   const { host, hostname } = new URL(input.originalUrl)
   if (host === baseHost) {
-    throw new Error('REDIRECT_LOOP')
+    throw new UrlFetchError('REDIRECT_LOOP')
   }
 
   let addresses: string[] = []
@@ -97,13 +108,13 @@ export async function createUrl(
     try {
       addresses = await dns.resolve4(hostname)
     } catch {
-      throw new Error('UNRESOLVED_DNS')
+      throw new UrlFetchError('UNRESOLVED_DNS')
     }
   }
 
   const isPrivate = addresses.some((ip) => ipaddr.parse(ip).range() !== 'unicast')
   if (isPrivate) {
-    throw new Error('PRIVATE_ADDRESS')
+    throw new UrlFetchError('PRIVATE_ADDRESS')
   }
 
   if (!input.allowDuplicate) {
@@ -150,7 +161,7 @@ export async function createUrl(
       }
     } catch (err) {
       if (isUniqueConstraintError(err)) {
-        if (input.customSlug) throw new Error('SLUG_TAKEN', { cause: err })
+        if (input.customSlug) throw new UrlFetchError('SLUG_TAKEN', { cause: err })
         continue
       }
       throw err
@@ -304,7 +315,7 @@ export async function getUrlPreview(slug: string): Promise<UrlRecord | null> {
   }
 
   if (url.expiresAt && url.expiresAt < new Date()) {
-    throw new Error('EXPIRED')
+    throw new UrlFetchError('EXPIRED')
   }
 
   return toUrlRecord(url)
