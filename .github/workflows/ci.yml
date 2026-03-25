@@ -88,8 +88,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Run tests
+      - name: Run API tests
         run: pnpm --filter api run test
+
+      - name: Run web tests
+        run: pnpm --filter web run test
 
   build:
     name: Build

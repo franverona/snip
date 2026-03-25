@@ -175,8 +175,10 @@ The `DATABASE_URL` defaults to the local `db` service (`postgresql://snip:snip@d
 | `pnpm format`                            | Format all files with Prettier               |
 | `pnpm format:check`                      | Check formatting without writing             |
 | `npx tsc -b --noEmit`                    | Type-check all packages from the root        |
-| `pnpm --filter api run test`             | Run API unit tests (no DB required)          |
-| `pnpm --filter api run test:watch`       | Run API tests in watch mode                  |
+| `pnpm test:api`                          | Run API unit tests (no DB required)          |
+| `pnpm test:api --watch`                  | Run API tests in watch mode                  |
+| `pnpm test:web`                          | Run web unit tests (no server required)      |
+| `pnpm test:web --watch`                  | Run web tests in watch mode                  |
 | `pnpm --filter api run migrate:generate` | Generate migration files from schema changes |
 
 ## Environment variables
