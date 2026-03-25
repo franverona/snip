@@ -434,6 +434,31 @@ describe('getUrlList', () => {
       totalPages: 0,
     })
   })
+
+  it('escapes % in search query', async () => {
+    mockSelectChain
+      .mockReturnValueOnce(makeSelectChain([mockUrlRow]))
+      .mockReturnValueOnce(makeSelectChain([{ count: 1 }]))
+    // should not throw and should call through without matching unintended rows
+    const result = await getUrlList(1, 10, 0, 'foo%bar')
+    expect(result.data).toHaveLength(1)
+  })
+
+  it('escapes _ in search query', async () => {
+    mockSelectChain
+      .mockReturnValueOnce(makeSelectChain([]))
+      .mockReturnValueOnce(makeSelectChain([{ count: 0 }]))
+    const result = await getUrlList(1, 10, 0, 'foo_bar')
+    expect(result.data).toHaveLength(0)
+  })
+
+  it('escapes backslash in search query', async () => {
+    mockSelectChain
+      .mockReturnValueOnce(makeSelectChain([]))
+      .mockReturnValueOnce(makeSelectChain([{ count: 0 }]))
+    const result = await getUrlList(1, 10, 0, 'foo\\bar')
+    expect(result.data).toHaveLength(0)
+  })
 })
 
 describe('getUrlPreview', () => {

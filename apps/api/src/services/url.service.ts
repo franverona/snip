@@ -271,7 +271,10 @@ export async function deleteUrls(slugs: string[]): Promise<{ deleted: number }> 
 }
 
 export async function getUrlList(page: number, perPage: number, offset: number, q?: string) {
-  const filter = q ? or(ilike(urls.slug, `%${q}%`), ilike(urls.originalUrl, `%${q}%`)) : undefined
+  const escaped = q ? q.replace(/[%_\\]/g, '\\$&') : undefined
+  const filter = escaped
+    ? or(ilike(urls.slug, `%${escaped}%`), ilike(urls.originalUrl, `%${escaped}%`))
+    : undefined
 
   const [rows, countResult] = await Promise.all([
     db
