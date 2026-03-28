@@ -76,6 +76,25 @@ describe('POST /api/auth/login — DASHBOARD_PASSWORD configured', () => {
     expect(match![1]).toHaveLength(64)
   })
 
+  it('cookie has Max-Age set to the default 7 days (604800)', async () => {
+    delete process.env['SESSION_MAX_AGE_SECONDS']
+    vi.resetModules()
+    const mod = await import('./route')
+    const res = await mod.POST(makeRequest({ password: 'secret123' }))
+    const cookie = res.headers.get('set-cookie') ?? ''
+    expect(cookie).toMatch(/Max-Age=604800/i)
+  })
+
+  it('cookie respects SESSION_MAX_AGE_SECONDS env var', async () => {
+    process.env['SESSION_MAX_AGE_SECONDS'] = '3600'
+    vi.resetModules()
+    const mod = await import('./route')
+    const res = await mod.POST(makeRequest({ password: 'secret123' }))
+    const cookie = res.headers.get('set-cookie') ?? ''
+    expect(cookie).toMatch(/Max-Age=3600/i)
+    delete process.env['SESSION_MAX_AGE_SECONDS']
+  })
+
   it('same password always produces the same session token', async () => {
     const res1 = await POST(makeRequest({ password: 'secret123' }, '10.0.0.1'))
     const res2 = await POST(makeRequest({ password: 'secret123' }, '10.0.0.2'))

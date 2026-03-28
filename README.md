@@ -206,6 +206,7 @@ The `DATABASE_URL` defaults to the local `db` service (`postgresql://snip:snip@d
 | `API_URL`                 | No       | `NEXT_PUBLIC_API_URL`   | API base URL for server-side (SSR) fetches. In Docker, set to the internal service URL (e.g. `http://api:3001`) so SSR can reach the API container |
 | `NEXT_TELEMETRY_DISABLED` | No       | `1`                     | Set to `1` to disable Next.js telemetry                                                                                                            |
 | `DASHBOARD_PASSWORD`      | No       | —                       | When set, all dashboard pages require a password. Unauthenticated visitors are redirected to `/login`                                              |
+| `SESSION_MAX_AGE_SECONDS` | No       | `604800` (7 days)       | Lifetime of the session cookie set after a successful dashboard login. Set to a shorter value for stricter session expiry                          |
 | `API_KEY`                 | No       | —                       | Forwarded as `Authorization: Bearer <key>` on mutating API requests. Must match `API_KEY` in `apps/api`                                            |
 
 ## Access protection

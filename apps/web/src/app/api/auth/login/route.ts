@@ -46,12 +46,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Incorrect password' }, { status: 401 })
   }
 
+  const maxAge = parseInt(process.env['SESSION_MAX_AGE_SECONDS'] ?? '604800', 10)
   const token = await computeSessionToken(password)
   const response = NextResponse.json({ ok: true })
   response.cookies.set(SESSION_COOKIE, token, {
     httpOnly: true,
     sameSite: 'lax',
     path: '/',
+    maxAge,
   })
   return response
 }
