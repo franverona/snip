@@ -1,15 +1,19 @@
 import { pgTable, uuid, text, boolean, timestamp, index } from 'drizzle-orm/pg-core'
 
-export const urls = pgTable('urls', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  slug: text('slug').unique().notNull(),
-  title: text('title'),
-  description: text('description'),
-  originalUrl: text('original_url').notNull(),
-  customSlug: boolean('custom_slug').default(false).notNull(),
-  expiresAt: timestamp('expires_at', { withTimezone: true }),
-  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-})
+export const urls = pgTable(
+  'urls',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    slug: text('slug').unique().notNull(),
+    title: text('title'),
+    description: text('description'),
+    originalUrl: text('original_url').notNull(),
+    customSlug: boolean('custom_slug').default(false).notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [index('urls_created_at_idx').on(t.createdAt)],
+)
 
 export const clicks = pgTable(
   'clicks',
