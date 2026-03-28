@@ -272,6 +272,54 @@ describe('createUrl', () => {
     expect(result.description).toBeNull()
   })
 
+  it('follows redirects up to the limit and returns title from final destination', async () => {
+    const redirectResponse = (location: string) => ({
+      ok: false,
+      status: 301,
+      headers: { get: (h: string) => (h === 'location' ? location : null) },
+    })
+    const finalResponse = {
+      ok: true,
+      status: 200,
+      headers: { get: (h: string) => (h === 'content-type' ? 'text/html; charset=utf-8' : null) },
+      text: async () => '<html><head><title>Final Page</title></head></html>',
+    }
+    mockFetch
+      .mockResolvedValueOnce(redirectResponse('https://example.com/step1'))
+      .mockResolvedValueOnce(redirectResponse('https://example.com/step2'))
+      .mockResolvedValueOnce(finalResponse)
+    mockInsertReturning.mockResolvedValue([{ ...mockUrlRow, title: 'Final Page' }])
+
+    const result = await createUrl({ originalUrl: 'https://example.com' }, BASE_URL)
+
+    expect(result.title).toBe('Final Page')
+    expect(mockFetch).toHaveBeenCalledTimes(3)
+  })
+
+  it('returns null title and description when redirect chain exceeds the limit', async () => {
+    const redirectResponse = (location: string) => ({
+      ok: false,
+      status: 302,
+      headers: { get: (h: string) => (h === 'location' ? location : null) },
+    })
+    // 6 redirect responses — one more than the allowed 5 hops
+    mockFetch
+      .mockResolvedValueOnce(redirectResponse('https://example.com/r1'))
+      .mockResolvedValueOnce(redirectResponse('https://example.com/r2'))
+      .mockResolvedValueOnce(redirectResponse('https://example.com/r3'))
+      .mockResolvedValueOnce(redirectResponse('https://example.com/r4'))
+      .mockResolvedValueOnce(redirectResponse('https://example.com/r5'))
+      .mockResolvedValueOnce(redirectResponse('https://example.com/r6'))
+    mockInsertReturning.mockResolvedValue([mockUrlRow])
+
+    const result = await createUrl({ originalUrl: 'https://example.com' }, BASE_URL)
+
+    expect(result.title).toBeNull()
+    expect(result.description).toBeNull()
+    // Fetched the original + 5 redirect hops = 6 total; bailed before following the 6th
+    expect(mockFetch).toHaveBeenCalledTimes(6)
+  })
+
   it('creates URL with null title and description when response is not HTML', async () => {
     mockFetch.mockResolvedValue({
       ok: true,
