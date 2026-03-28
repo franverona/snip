@@ -14,7 +14,7 @@ interface RateLimitEntry {
 const attempts = new Map<string, RateLimitEntry>()
 
 function getClientIp(request: NextRequest): string {
-  return request.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? 'unknown'
+  return request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
 }
 
 export function getRateLimitAttempts() {
