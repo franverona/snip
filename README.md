@@ -226,6 +226,9 @@ DASHBOARD_PASSWORD=your-password
 
 Set `API_KEY` in `apps/api` to require an `Authorization: Bearer <key>` header on all endpoints except `GET /:slug` (the public redirect). Without it, anyone with network access to the API can create or delete URLs.
 
+> **Security note — CORS does not protect the API from non-browser clients.**
+> CORS headers restrict which browser origins may call the API, but they have no effect on `curl`, Postman, scripts, or any other non-browser HTTP client. When `API_KEY` is unset, those clients can freely create or delete URLs even though a browser from an unlisted origin would be blocked. **Set `API_KEY` in any deployment that is reachable over a network** — including instances behind a VPN or a private subnet — unless you intentionally want the API to be publicly writable.
+
 ```bash
 # apps/api/.env.local
 API_KEY=your-api-key
