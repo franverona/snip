@@ -105,9 +105,14 @@ export async function createUrl(
   if (net.isIP(hostname) !== 0) {
     addresses.push(hostname)
   } else {
-    try {
-      addresses = await dns.resolve4(hostname)
-    } catch {
+    const [v4Result, v6Result] = await Promise.allSettled([
+      dns.resolve4(hostname),
+      dns.resolve6(hostname),
+    ])
+    const v4Addresses = v4Result.status === 'fulfilled' ? v4Result.value : []
+    const v6Addresses = v6Result.status === 'fulfilled' ? v6Result.value : []
+    addresses = [...v4Addresses, ...v6Addresses]
+    if (addresses.length === 0) {
       throw new UrlFetchError('UNRESOLVED_DNS')
     }
   }

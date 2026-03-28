@@ -51,7 +51,7 @@ vi.mock('../db/client.js', () => ({
 vi.mock('nanoid', () => ({ nanoid: vi.fn(() => 'abc12345') }))
 
 vi.mock('node:dns/promises', () => ({
-  default: { resolve4: vi.fn() },
+  default: { resolve4: vi.fn(), resolve6: vi.fn() },
 }))
 
 vi.mock('ipaddr.js', () => ({
@@ -87,6 +87,7 @@ const mockUrlRow = {
 beforeEach(() => {
   vi.clearAllMocks()
   vi.mocked(dns.resolve4).mockResolvedValue(['1.2.3.4'])
+  vi.mocked(dns.resolve6).mockRejectedValue(new Error('ENODATA'))
   vi.mocked(ipaddr.parse).mockReturnValue({ range: () => 'unicast' } as ReturnType<
     typeof ipaddr.parse
   >)
@@ -104,11 +105,31 @@ describe('createUrl', () => {
     ).rejects.toThrow('REDIRECT_LOOP')
   })
 
-  it('throws UNRESOLVED_DNS when DNS lookup fails', async () => {
+  it('throws UNRESOLVED_DNS when both A and AAAA lookups fail', async () => {
     vi.mocked(dns.resolve4).mockRejectedValue(new Error('ENOTFOUND'))
+    vi.mocked(dns.resolve6).mockRejectedValue(new Error('ENOTFOUND'))
     await expect(
       createUrl({ originalUrl: 'https://nonexistent.example.test' }, BASE_URL),
     ).rejects.toThrow('UNRESOLVED_DNS')
+  })
+
+  it('resolves successfully for an IPv6-only host (no A records)', async () => {
+    vi.mocked(dns.resolve4).mockRejectedValue(new Error('ENODATA'))
+    vi.mocked(dns.resolve6).mockResolvedValue(['2001:db8::1'])
+    mockInsertReturning.mockResolvedValue([mockUrlRow])
+    const result = await createUrl({ originalUrl: 'https://ipv6only.example.com' }, BASE_URL)
+    expect(result.shortUrl).toBe('http://localhost:3001/abc12345')
+  })
+
+  it('throws PRIVATE_ADDRESS when an IPv6-only host resolves to a private address', async () => {
+    vi.mocked(dns.resolve4).mockRejectedValue(new Error('ENODATA'))
+    vi.mocked(dns.resolve6).mockResolvedValue(['fc00::1'])
+    vi.mocked(ipaddr.parse).mockReturnValue({ range: () => 'uniqueLocal' } as ReturnType<
+      typeof ipaddr.parse
+    >)
+    await expect(
+      createUrl({ originalUrl: 'https://ipv6only.example.com' }, BASE_URL),
+    ).rejects.toThrow('PRIVATE_ADDRESS')
   })
 
   it('throws PRIVATE_ADDRESS when URL resolves to a private IP', async () => {
