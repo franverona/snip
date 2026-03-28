@@ -5,6 +5,7 @@ const {
   mockFindFirstUrl,
   mockFindManyClicks,
   mockInsertReturning,
+  mockInsertValues,
   mockSelectChain,
   mockDeleteReturning,
   mockFetch,
@@ -25,11 +26,15 @@ const {
   const mockFetch = vi.fn()
   vi.stubGlobal('fetch', mockFetch)
 
+  const mockInsertReturning = vi.fn()
+  const mockInsertValues = vi.fn(() => ({ returning: mockInsertReturning }))
+
   return {
     makeSelectChain,
     mockFindFirstUrl: vi.fn(),
     mockFindManyClicks: vi.fn(),
-    mockInsertReturning: vi.fn(),
+    mockInsertReturning,
+    mockInsertValues,
     mockSelectChain: vi.fn(() => makeSelectChain([])),
     mockDeleteReturning: vi.fn(),
     mockFetch,
@@ -42,7 +47,7 @@ vi.mock('../db/client.js', () => ({
       urls: { findFirst: mockFindFirstUrl },
       clicks: { findMany: mockFindManyClicks },
     },
-    insert: () => ({ values: () => ({ returning: mockInsertReturning }) }),
+    insert: () => ({ values: mockInsertValues }),
     select: mockSelectChain,
     delete: () => ({ where: () => ({ returning: mockDeleteReturning }) }),
   },
@@ -341,6 +346,31 @@ describe('recordClick', () => {
         referer: 'https://ref.com',
       }),
     ).resolves.toBeUndefined()
+  })
+
+  it('truncates userAgent longer than 1000 chars', async () => {
+    const longUserAgent = 'a'.repeat(1500)
+    await recordClick('uuid-1', { userAgent: longUserAgent })
+    expect(mockInsertValues).toHaveBeenCalledWith(
+      expect.objectContaining({ userAgent: 'a'.repeat(1000) }),
+    )
+  })
+
+  it('truncates referer longer than 500 chars', async () => {
+    const longReferer = 'b'.repeat(800)
+    await recordClick('uuid-1', { referer: longReferer })
+    expect(mockInsertValues).toHaveBeenCalledWith(
+      expect.objectContaining({ referer: 'b'.repeat(500) }),
+    )
+  })
+
+  it('does not truncate userAgent or referer within limits', async () => {
+    const ua = 'a'.repeat(1000)
+    const ref = 'b'.repeat(500)
+    await recordClick('uuid-1', { userAgent: ua, referer: ref })
+    expect(mockInsertValues).toHaveBeenCalledWith(
+      expect.objectContaining({ userAgent: ua, referer: ref }),
+    )
   })
 })
 
