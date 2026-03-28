@@ -61,16 +61,29 @@ export class UrlFetchError extends Error {
 
 type PageMeta = { title: string | null; description: string | null }
 
+const MAX_REDIRECTS = 5
+
 async function fetchPageMeta(url: string): Promise<PageMeta> {
   try {
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), 3000)
     try {
-      const res = await fetch(url, {
+      const fetchOpts = {
         signal: controller.signal,
         headers: { 'User-Agent': 'snip-bot/1.0 (link preview fetcher)' },
-        redirect: 'follow',
-      })
+        redirect: 'manual' as const,
+      }
+      let currentUrl = url
+      let res = await fetch(currentUrl, fetchOpts)
+      let redirectsFollowed = 0
+      while (res.status >= 300 && res.status < 400) {
+        if (redirectsFollowed >= MAX_REDIRECTS) return { title: null, description: null }
+        const location = res.headers.get('location')
+        if (!location) break
+        currentUrl = new URL(location, currentUrl).href
+        redirectsFollowed++
+        res = await fetch(currentUrl, fetchOpts)
+      }
       if (!res.ok) return { title: null, description: null }
       const contentType = res.headers.get('content-type') ?? ''
       if (!contentType.includes('text/html')) return { title: null, description: null }
