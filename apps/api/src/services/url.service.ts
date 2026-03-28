@@ -185,8 +185,8 @@ export async function recordClick(
   await db.insert(clicks).values({
     urlId,
     ipHash: meta.ipHash ?? null,
-    userAgent: meta.userAgent ?? null,
-    referer: meta.referer ?? null,
+    userAgent: meta.userAgent ? meta.userAgent.slice(0, 1000) : null,
+    referer: meta.referer ? meta.referer.slice(0, 500) : null,
   })
 }
 
