@@ -23,7 +23,7 @@
     "@snip/types": "workspace:*",
     "dotenv": "^16.4.7",
     "drizzle-orm": "^0.45.2",
-    "fastify": "^5.2.1",
+    "fastify": "^5.8.4",
     "ipaddr.js": "^2.3.0",
     "nanoid": "^5.1.7",
     "node-html-parser": "^7.1.0",
