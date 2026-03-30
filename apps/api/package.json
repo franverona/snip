@@ -22,7 +22,7 @@
     "@scalar/fastify-api-reference": "^1.49.3",
     "@snip/types": "workspace:*",
     "dotenv": "^16.4.7",
-    "drizzle-orm": "^0.45.1",
+    "drizzle-orm": "^0.45.2",
     "fastify": "^5.2.1",
     "ipaddr.js": "^2.3.0",
     "nanoid": "^5.1.7",
