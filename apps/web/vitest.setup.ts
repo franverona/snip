@@ -5,7 +5,8 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
-// jsdom doesn't implement HTMLCanvasElement.getContext — silence the noise from qrcode.react
+// jsdom doesn't implement canvas APIs — silence the noise from qrcode.react
 if (typeof HTMLCanvasElement !== 'undefined') {
   HTMLCanvasElement.prototype.getContext = () => null
+  HTMLCanvasElement.prototype.toDataURL = () => ''
 }

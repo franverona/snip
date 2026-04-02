@@ -26,7 +26,7 @@ export function QRDownloadButton({
     const label = title ? title.slice(0, 40).replace(/[^a-z0-9]/gi, '-') : slug
     const date = new Date().toISOString().slice(0, 10)
     const link = document.createElement('a')
-    link.download = `${label}-${date}.png`
+    link.download = `${label}-${date}.png`.replace(/-+/gi, '-')
     link.href = canvas.toDataURL('image/png')
     link.click()
   }
