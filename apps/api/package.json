@@ -19,7 +19,7 @@
     "@fastify/cors": "^10.0.2",
     "@fastify/rate-limit": "^10.3.0",
     "@fastify/swagger": "^9.7.0",
-    "@scalar/fastify-api-reference": "^1.51.0",
+    "@scalar/fastify-api-reference": "^1.52.1",
     "@snip/types": "workspace:*",
     "dotenv": "^16.4.7",
     "drizzle-orm": "^0.45.2",
