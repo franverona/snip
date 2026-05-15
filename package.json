@@ -34,11 +34,5 @@
     "*.{ts,tsx}": "eslint --fix",
     "*.{ts,tsx,js,json,md,yaml,yml,css}": "prettier --write"
   },
-  "packageManager": "pnpm@11.1.2",
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "esbuild",
-      "sharp"
-    ]
-  }
+  "packageManager": "pnpm@11.1.2"
 }
