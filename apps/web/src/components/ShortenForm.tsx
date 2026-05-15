@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import styled from 'styled-components'
 import { api, ApiError } from '@/lib/api'
 import { CreateUrlInputSchema, type CreateUrlResponse } from '@snip/types'
@@ -251,10 +251,7 @@ export function ShortenForm() {
   const [apiError, setApiError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [copied, setCopied] = useState(false)
-  const [canShare, setCanShare] = useState(false)
-  useEffect(() => {
-    setCanShare(!!navigator.share)
-  }, [])
+  const [canShare] = useState(() => typeof navigator !== 'undefined' && !!navigator.share)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
