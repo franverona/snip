@@ -174,7 +174,7 @@ The `DATABASE_URL` defaults to the local `db` service (`postgresql://snip:snip@d
 | `pnpm lint`                              | Lint all packages with ESLint                |
 | `pnpm format`                            | Format all files with Prettier               |
 | `pnpm format:check`                      | Check formatting without writing             |
-| `npx tsc -b --noEmit`                    | Type-check all packages from the root        |
+| `pnpm exec tsc -b --noEmit`              | Type-check all packages from the root        |
 | `pnpm test:api`                          | Run API unit tests (no DB required)          |
 | `pnpm test:api --watch`                  | Run API tests in watch mode                  |
 | `pnpm test:web`                          | Run web unit tests (no server required)      |
