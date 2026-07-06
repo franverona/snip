@@ -32,4 +32,4 @@ minimumReleaseAgeExclude:
   - react-dom@19.2.7
   - react@19.2.7
   - typescript-eslint@8.60.1
-  - fastify@5.9.0
+  - fastify@5.9.0 || 5.10.0
