@@ -25,14 +25,14 @@
     "eslint-plugin-unused-imports": "^4.4.1",
     "husky": "^9.1.7",
     "lint-staged": "^16.4.0",
-    "prettier": "^3.9.4",
-    "turbo": "^2.10.3",
+    "prettier": "^3.9.5",
+    "turbo": "^2.10.4",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.62.1"
+    "typescript-eslint": "^8.63.0"
   },
   "lint-staged": {
     "*.{ts,tsx}": "eslint --fix",
     "*.{ts,tsx,js,json,md,yaml,yml,css}": "prettier --write"
   },
-  "packageManager": "pnpm@11.10.0"
+  "packageManager": "pnpm@11.13.0"
 }
