@@ -142,8 +142,8 @@ importers:
         specifier: ^19.2.7
         version: 19.2.7(react@19.2.7)
       styled-components:
-        specifier: ^6.4.3
-        version: 6.4.3(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+        specifier: ^6.4.4
+        version: 6.4.4(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       zod:
         specifier: ^4.3.6
         version: 4.4.3
@@ -3352,8 +3352,8 @@ packages:
     resolution: {integrity: sha512-1tB5mhVo7U+ETBKNf92xT4hrQa3pm0MZ0PQvuDnWgAAGHDsfp4lPSpiS6psrSiet87wyGPh9ft6wmhOMQ0hDiw==}
     engines: {node: '>=14.16'}
 
-  styled-components@6.4.3:
-    resolution: {integrity: sha512-wYXrhu+JmDjZ1Tv7O0OopGTfztbzun43Pjjhh2H+xc0h5A09dwpZ5FJbrifJDcL8g5TA9btpWOX2+iSRuJTExw==}
+  styled-components@6.4.4:
+    resolution: {integrity: sha512-tJk5CmKUPMDoTsZQ8m0hHInBk9HFKUPSusqmbBuefDX+yUbMBWea2Ob/wdXFyHW8XZqXkprJscysAdKeGWNqlA==}
     engines: {node: '>= 16'}
     peerDependencies:
       css-to-react-native: '>= 3.2.0'
@@ -6844,7 +6844,7 @@ snapshots:
 
   strip-json-comments@5.0.3: {}
 
-  styled-components@6.4.3(react-dom@19.2.7(react@19.2.7))(react@19.2.7):
+  styled-components@6.4.4(react-dom@19.2.7(react@19.2.7))(react@19.2.7):
     dependencies:
       '@emotion/is-prop-valid': 1.4.0
       csstype: 3.2.3
