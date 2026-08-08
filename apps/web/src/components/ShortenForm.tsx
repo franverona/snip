@@ -125,6 +125,29 @@ const ErrorBox = styled.div`
   color: ${({ theme }) => theme.colors.errorText};
 `
 
+const SuggestionsRow = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.625rem;
+`
+
+const SuggestionChip = styled.button`
+  border: 1px solid ${({ theme }) => theme.colors.errorBorder};
+  background: ${({ theme }) => theme.colors.surface};
+  color: ${({ theme }) => theme.colors.errorText};
+  border-radius: 9999px;
+  padding: 0.25rem 0.75rem;
+  font-family: monospace;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: background 0.1s;
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.surfaceHover};
+  }
+`
+
 const ResultBox = styled.div`
   margin-top: 1.5rem;
   border: 1px solid ${({ theme }) => theme.colors.successBorder};
@@ -249,6 +272,7 @@ export function ShortenForm() {
   const [result, setResult] = useState<CreateUrlResponse | null>(null)
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({})
   const [apiError, setApiError] = useState<string | null>(null)
+  const [slugSuggestions, setSlugSuggestions] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
   const [copied, setCopied] = useState(false)
   const [canShare] = useState(() => typeof navigator !== 'undefined' && !!navigator.share)
@@ -257,6 +281,7 @@ export function ShortenForm() {
     e.preventDefault()
     setFieldErrors({})
     setApiError(null)
+    setSlugSuggestions([])
     setResult(null)
     setLoading(true)
 
@@ -289,6 +314,7 @@ export function ShortenForm() {
     } catch (err) {
       if (err instanceof ApiError) {
         setApiError(err.message)
+        setSlugSuggestions(err.suggestions ?? [])
         showToast(err.message, 'error')
       } else {
         setApiError('Unexpected error. Please try again.')
@@ -297,6 +323,12 @@ export function ShortenForm() {
     } finally {
       setLoading(false)
     }
+  }
+
+  function applySuggestion(slug: string) {
+    setCustomSlug(slug)
+    setApiError(null)
+    setSlugSuggestions([])
   }
 
   async function handleCopy() {
@@ -412,7 +444,20 @@ export function ShortenForm() {
         </SubmitButton>
       </Form>
 
-      {apiError && <ErrorBox>{apiError}</ErrorBox>}
+      {apiError && (
+        <ErrorBox>
+          {apiError}
+          {slugSuggestions.length > 0 && (
+            <SuggestionsRow>
+              {slugSuggestions.map((slug) => (
+                <SuggestionChip key={slug} type="button" onClick={() => applySuggestion(slug)}>
+                  {slug}
+                </SuggestionChip>
+              ))}
+            </SuggestionsRow>
+          )}
+        </ErrorBox>
+      )}
 
       {result && (
         <ResultBox>

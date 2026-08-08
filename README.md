@@ -291,6 +291,8 @@ An interactive API reference (powered by [Scalar](https://scalar.com)) is availa
 | `409`  | `customSlug` is already taken                                               |
 | `422`  | URL hostname could not be resolved via DNS                                  |
 
+A `409` response includes a `suggestions` array of available alternative slugs (e.g. `["my-link-2", "my-link-3", "my-link-ab12"]`) so a client can offer them as one-click options instead of just erroring out.
+
 ### GET /:slug
 
 Serves an HTML page with OG meta tags and a `meta-refresh` redirect to the original URL. Also records the click fire-and-forget. Returns `404` if the slug doesn't exist or `410` (with `Cache-Control: public, max-age=60`) if the URL has expired.

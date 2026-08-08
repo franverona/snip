@@ -93,6 +93,8 @@ export const UrlStatsSchema = z.object({
 export const ErrorResponseSchema = z.object({
   error: z.string(),
   message: z.string().optional(),
+  // Only set on 409 SLUG_TAKEN responses from POST /urls — alternative available slugs.
+  suggestions: z.array(z.string()).optional(),
 })
 
 export const HealthResponseSchema = z.object({
