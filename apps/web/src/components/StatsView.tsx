@@ -445,7 +445,7 @@ export function StatsView({ stats, slug }: Props) {
 
       <StatsGrid>
         <StatCard>
-          <StatValue>{totalClicks.toLocaleString('en-US')}</StatValue>
+          <StatValue data-testid="total-clicks">{totalClicks.toLocaleString('en-US')}</StatValue>
           <StatLabel>Total clicks</StatLabel>
         </StatCard>
         <StatCard>

@@ -180,6 +180,7 @@ The `DATABASE_URL` defaults to the local `db` service (`postgresql://snip:snip@d
 | `pnpm test:api --watch`                  | Run API tests in watch mode                  |
 | `pnpm test:web`                          | Run web unit tests (no server required)      |
 | `pnpm test:web --watch`                  | Run web tests in watch mode                  |
+| `pnpm test:e2e`                          | Run Playwright E2E tests (see `apps/e2e`)    |
 | `pnpm --filter api run migrate:generate` | Generate migration files from schema changes |
 
 ## Environment variables
