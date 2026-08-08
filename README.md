@@ -181,6 +181,7 @@ The `DATABASE_URL` defaults to the local `db` service (`postgresql://snip:snip@d
 | `pnpm test:api --watch`                  | Run API tests in watch mode                  |
 | `pnpm test:web`                          | Run web unit tests (no server required)      |
 | `pnpm test:web --watch`                  | Run web tests in watch mode                  |
+| `pnpm test:e2e`                          | Run Playwright E2E tests (see `apps/e2e`)    |
 | `pnpm --filter api run migrate:generate` | Generate migration files from schema changes |
 
 ## Environment variables
@@ -295,6 +296,8 @@ An interactive API reference (powered by [Scalar](https://scalar.com)) is availa
 | `400`  | Invalid body or URL points to this service or resolves to a private address |
 | `409`  | `customSlug` is already taken                                               |
 | `422`  | URL hostname could not be resolved via DNS                                  |
+
+A `409` response includes a `suggestions` array of available alternative slugs (e.g. `["my-link-2", "my-link-3", "my-link-ab12"]`) so a client can offer them as one-click options instead of just erroring out.
 
 ### POST /urls/bulk
 

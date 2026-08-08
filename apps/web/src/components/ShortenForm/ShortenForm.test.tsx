@@ -10,10 +10,12 @@ import { ShortenForm } from '@/components/ShortenForm'
 vi.mock('@/lib/api', () => {
   class ApiError extends Error {
     status: number
-    constructor(status: number, message: string) {
+    suggestions?: string[]
+    constructor(status: number, message: string, suggestions?: string[]) {
       super(message)
       this.name = 'ApiError'
       this.status = status
+      this.suggestions = suggestions
     }
   }
   return {
@@ -134,6 +136,57 @@ describe('ShortenForm', () => {
     await waitFor(() => {
       expect(screen.getAllByText('Internal server error').length).toBeGreaterThan(0)
     })
+  })
+
+  it('shows slug suggestions as clickable chips when the slug is taken', async () => {
+    const user = userEvent.setup()
+    mockCreateUrl.mockRejectedValue(
+      new ApiError(409, 'Slug already taken', ['my-slug-2', 'my-slug-3']),
+    )
+
+    renderForm()
+    await user.type(screen.getByLabelText(/url to shorten/i), 'https://example.com')
+    await user.type(screen.getByLabelText(/custom slug/i), 'my-slug')
+    await user.click(screen.getByRole('button', { name: /shorten url/i }))
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'my-slug-2' })).toBeInTheDocument()
+    })
+    expect(screen.getByRole('button', { name: 'my-slug-3' })).toBeInTheDocument()
+  })
+
+  it('fills the custom slug field and clears the error when a suggestion is clicked', async () => {
+    const user = userEvent.setup()
+    mockCreateUrl.mockRejectedValue(new ApiError(409, 'Slug already taken', ['my-slug-2']))
+
+    renderForm()
+    await user.type(screen.getByLabelText(/url to shorten/i), 'https://example.com')
+    await user.type(screen.getByLabelText(/custom slug/i), 'my-slug')
+    await user.click(screen.getByRole('button', { name: /shorten url/i }))
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'my-slug-2' })).toBeInTheDocument()
+    })
+    await user.click(screen.getByRole('button', { name: 'my-slug-2' }))
+
+    expect(screen.getByLabelText(/custom slug/i)).toHaveValue('my-slug-2')
+    // The suggestion chip itself is gone — the error box (and any lingering toast
+    // with the same text) is not what's under test here.
+    expect(screen.queryByRole('button', { name: 'my-slug-2' })).not.toBeInTheDocument()
+  })
+
+  it('does not show suggestion chips for errors without suggestions', async () => {
+    const user = userEvent.setup()
+    mockCreateUrl.mockRejectedValue(new ApiError(500, 'Internal server error'))
+
+    renderForm()
+    await user.type(screen.getByLabelText(/url to shorten/i), 'https://example.com')
+    await user.click(screen.getByRole('button', { name: /shorten url/i }))
+
+    await waitFor(() => {
+      expect(screen.getAllByText('Internal server error').length).toBeGreaterThan(0)
+    })
+    expect(screen.queryByRole('button', { name: /^my-slug/i })).not.toBeInTheDocument()
   })
 
   it('toggles the advanced options section', async () => {

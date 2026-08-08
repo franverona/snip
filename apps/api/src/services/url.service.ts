@@ -228,6 +228,16 @@ export async function createUrlsBulk(
   return Promise.all(inputs.map((input) => createUrlSafe(input, baseUrl)))
 }
 
+export async function suggestAvailableSlugs(baseSlug: string): Promise<string[]> {
+  const candidates = [`${baseSlug}-2`, `${baseSlug}-3`, `${baseSlug}-${nanoid(4)}`]
+  const taken = await db
+    .select({ slug: urls.slug })
+    .from(urls)
+    .where(inArray(urls.slug, candidates))
+  const takenSlugs = new Set(taken.map((u) => u.slug))
+  return candidates.filter((c) => !takenSlugs.has(c))
+}
+
 export async function findUrlBySlug(slug: string): Promise<Url | null> {
   const url = await db.query.urls.findFirst({
     where: eq(urls.slug, slug),
