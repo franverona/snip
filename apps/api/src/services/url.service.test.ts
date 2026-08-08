@@ -65,6 +65,7 @@ vi.mock('ipaddr.js', () => ({
 
 import {
   createUrl,
+  createUrlsBulk,
   findUrlBySlug,
   recordClick,
   getUrlStats,
@@ -368,6 +369,48 @@ describe('createUrl', () => {
     expect(result.title).toBe('Override Title')
     expect(result.description).toBe('Scraped desc')
     expect(mockFetch).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('createUrlsBulk', () => {
+  it('returns a per-item result without failing the whole batch on one bad entry', async () => {
+    vi.mocked(dns.resolve4).mockImplementation(async (hostname: unknown) =>
+      hostname === 'blocked.example.com' ? ['10.0.0.1'] : ['1.2.3.4'],
+    )
+    vi.mocked(ipaddr.parse).mockImplementation(
+      (ip: unknown) =>
+        ({ range: () => (ip === '10.0.0.1' ? 'private' : 'unicast') }) as ReturnType<
+          typeof ipaddr.parse
+        >,
+    )
+    mockInsertReturning.mockResolvedValue([mockUrlRow])
+
+    const results = await createUrlsBulk(
+      [
+        { originalUrl: 'https://good.example.com' },
+        { originalUrl: 'https://blocked.example.com' },
+        { originalUrl: 'http://localhost:3001/loop' },
+      ],
+      BASE_URL,
+    )
+
+    expect(results).toHaveLength(3)
+    expect(results[0]).toMatchObject({ success: true, slug: 'abc12345' })
+    expect(results[1]).toEqual({
+      success: false,
+      originalUrl: 'https://blocked.example.com',
+      error: 'URL resolves to a private or reserved address',
+    })
+    expect(results[2]).toEqual({
+      success: false,
+      originalUrl: 'http://localhost:3001/loop',
+      error: 'Cannot shorten a URL pointing to this service',
+    })
+  })
+
+  it('returns an empty array for an empty input list', async () => {
+    const results = await createUrlsBulk([], BASE_URL)
+    expect(results).toEqual([])
   })
 })
 

@@ -7,6 +7,7 @@ vi.mock('../config.js', () => ({
   env: {
     BASE_URL: 'http://localhost:3001',
     RATE_LIMIT_CREATE_PER_MINUTE: 2,
+    RATE_LIMIT_BULK_CREATE_PER_MINUTE: 2,
     API_KEY: undefined as string | undefined,
   },
 }))
@@ -14,6 +15,7 @@ vi.mock('../config.js', () => ({
 vi.mock('../services/url.service.js', () => ({
   getUrlList: vi.fn(),
   createUrl: vi.fn(),
+  createUrlsBulk: vi.fn(),
   getUrlStats: vi.fn(),
   deleteUrl: vi.fn(),
   getUrlPreview: vi.fn(),
@@ -26,7 +28,7 @@ vi.mock('../lib/pagination.js', () => ({
   totalPages: vi.fn(() => 1),
 }))
 
-import { createUrl, getUrlList } from '../services/url.service.js'
+import { createUrl, createUrlsBulk, getUrlList } from '../services/url.service.js'
 
 const mockUrlResult = {
   id: '00000000-0000-0000-0000-000000000001',
@@ -95,6 +97,35 @@ describe('Rate limiting — POST /urls per-route limit', () => {
 
     expect(res.statusCode).toBe(429)
     expect(res.headers['retry-after']).toBeDefined()
+  })
+})
+
+describe('Rate limiting — POST /urls/bulk per-route limit', () => {
+  let app: FastifyInstance
+
+  beforeEach(async () => {
+    vi.clearAllMocks()
+    vi.mocked(createUrlsBulk).mockResolvedValue([{ ...mockUrlResult, success: true }])
+    app = Fastify({ logger: false })
+    await app.register(rateLimit, { global: false })
+    await app.register(urlRoutes)
+  })
+
+  afterEach(async () => {
+    await app.close()
+  })
+
+  it('allows requests up to RATE_LIMIT_BULK_CREATE_PER_MINUTE and returns 429 on the next', async () => {
+    const LIMIT = 2 // matches mocked RATE_LIMIT_BULK_CREATE_PER_MINUTE
+    const payload = { urls: [{ originalUrl: 'https://example.com' }] }
+
+    for (let i = 0; i < LIMIT; i++) {
+      const res = await app.inject({ method: 'POST', url: '/urls/bulk', payload })
+      expect(res.statusCode).toBe(200)
+    }
+
+    const res = await app.inject({ method: 'POST', url: '/urls/bulk', payload })
+    expect(res.statusCode).toBe(429)
   })
 })
 

@@ -29,6 +29,10 @@ export const SlugParamSchema = z.object({
   slug: z.string().min(1),
 })
 
+export const BulkCreateUrlsInputSchema = z.object({
+  urls: z.array(CreateUrlInputSchema).min(1).max(50),
+})
+
 // ---- Response schemas ----
 
 export const UrlRecordSchema = z.object({
@@ -99,6 +103,15 @@ export const HealthResponseSchema = z.object({
   status: z.enum(['ok', 'error']),
   db: z.enum(['ok', 'error']),
   timestamp: z.iso.datetime(),
+})
+
+export const BulkCreateUrlResultSchema = z.discriminatedUnion('success', [
+  CreateUrlResponseSchema.extend({ success: z.literal(true) }),
+  z.object({ success: z.literal(false), originalUrl: z.string(), error: z.string() }),
+])
+
+export const BulkCreateUrlsResponseSchema = z.object({
+  results: z.array(BulkCreateUrlResultSchema),
 })
 
 export const BulkDeleteUrlsInputSchema = z.object({

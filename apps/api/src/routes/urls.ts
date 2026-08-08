@@ -1,7 +1,12 @@
 import type { FastifyInstance } from 'fastify'
-import { CreateUrlInputSchema, BulkDeleteUrlsInputSchema } from '@snip/types'
+import {
+  CreateUrlInputSchema,
+  BulkDeleteUrlsInputSchema,
+  BulkCreateUrlsInputSchema,
+} from '@snip/types'
 import {
   createUrl,
+  createUrlsBulk,
   getUrlStats,
   deleteUrl,
   deleteUrls,
@@ -182,6 +187,97 @@ export async function urlRoutes(fastify: FastifyInstance) {
         }
         throw err
       }
+    },
+  )
+
+  // POST /urls/bulk — create multiple short URLs in one call
+  fastify.post(
+    '/urls/bulk',
+    {
+      preHandler: [requireApiKey],
+      config: {
+        rateLimit: {
+          max: env.RATE_LIMIT_BULK_CREATE_PER_MINUTE,
+        },
+      },
+      schema: {
+        tags: ['URLs'],
+        summary: 'Bulk create short URLs',
+        description:
+          'Creates up to 50 short URLs in one call. Always returns 200 — check each result’s `success` field, since some entries can fail while others succeed.',
+        security: routeSecurity,
+        body: {
+          type: 'object',
+          required: ['urls'],
+          properties: {
+            urls: {
+              type: 'array',
+              minItems: 1,
+              maxItems: 50,
+              description: 'URLs to create (1–50), same shape as POST /urls',
+              items: {
+                type: 'object',
+                required: ['originalUrl'],
+                properties: {
+                  originalUrl: { type: 'string', format: 'uri' },
+                  customSlug: { type: 'string' },
+                  expiresAt: { type: 'string', format: 'date-time' },
+                  title: { type: 'string', maxLength: 200 },
+                  description: { type: 'string', maxLength: 500 },
+                  allowDuplicate: { type: 'boolean' },
+                },
+              },
+            },
+          },
+        },
+        response: {
+          200: {
+            description: 'One result per input URL, in the same order',
+            type: 'object',
+            properties: {
+              results: {
+                type: 'array',
+                description:
+                  'Each entry is either a created record (success: true) or {success: false, originalUrl, error}',
+                items: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean' },
+                    id: { type: 'string' },
+                    slug: { type: 'string' },
+                    originalUrl: { type: 'string' },
+                    shortUrl: { type: 'string' },
+                    customSlug: { type: 'boolean' },
+                    title: { type: 'string', nullable: true },
+                    description: { type: 'string', nullable: true },
+                    expiresAt: { type: 'string', format: 'date-time', nullable: true },
+                    createdAt: { type: 'string', format: 'date-time' },
+                    existing: { type: 'boolean' },
+                    error: { type: 'string' },
+                  },
+                },
+              },
+            },
+          },
+          400: {
+            description: 'Validation error',
+            type: 'object',
+            properties: { error: { type: 'string' }, message: { type: 'string' } },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      const parsed = BulkCreateUrlsInputSchema.safeParse(request.body)
+      if (!parsed.success) {
+        return reply.status(400).send({
+          error: 'Validation error',
+          message: parsed.error.issues.map((i) => i.message).join(', '),
+        })
+      }
+
+      const results = await createUrlsBulk(parsed.data.urls, env.BASE_URL)
+      return reply.send({ results })
     },
   )
 

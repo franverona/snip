@@ -16,6 +16,9 @@ import type {
   UrlListRecordSchema,
   BulkDeleteUrlsInputSchema,
   BulkDeleteUrlsResponseSchema,
+  BulkCreateUrlsInputSchema,
+  BulkCreateUrlResultSchema,
+  BulkCreateUrlsResponseSchema,
 } from './schemas.js'
 
 export type CreateUrlInput = z.infer<typeof CreateUrlInputSchema>
@@ -31,6 +34,9 @@ export type UrlList = z.infer<typeof UrlListSchema>
 export type UrlListRecord = z.infer<typeof UrlListRecordSchema>
 export type BulkDeleteUrlsInput = z.infer<typeof BulkDeleteUrlsInputSchema>
 export type BulkDeleteUrlsResponse = z.infer<typeof BulkDeleteUrlsResponseSchema>
+export type BulkCreateUrlsInput = z.infer<typeof BulkCreateUrlsInputSchema>
+export type BulkCreateUrlResult = z.infer<typeof BulkCreateUrlResultSchema>
+export type BulkCreateUrlsResponse = z.infer<typeof BulkCreateUrlsResponseSchema>
 
 export type UrlErrorCode =
   'REDIRECT_LOOP' | 'UNRESOLVED_DNS' | 'PRIVATE_ADDRESS' | 'SLUG_TAKEN' | 'EXPIRED'
