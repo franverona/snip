@@ -38,7 +38,7 @@ export async function urlRoutes(fastify: FastifyInstance) {
             },
             q: {
               type: 'string',
-              description: 'Search query — filters by slug, title, or original URL',
+              description: 'Search query — filters by slug, title, description, or original URL',
             },
           },
         },
