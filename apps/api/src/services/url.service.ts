@@ -7,6 +7,7 @@ import { urls, clicks, type Url, type Click } from '../db/schema.js'
 import type {
   CreateUrlInput,
   CreateUrlResponse,
+  BulkCreateUrlResult,
   UpdateUrlInput,
   UrlStats,
   ClickRecord,
@@ -188,6 +189,43 @@ export async function createUrl(
   }
 
   throw new Error('Failed to generate unique slug after retries')
+}
+
+function messageForError(err: unknown): string {
+  if (err instanceof UrlFetchError) {
+    switch (err.code) {
+      case 'REDIRECT_LOOP':
+        return 'Cannot shorten a URL pointing to this service'
+      case 'SLUG_TAKEN':
+        return 'Slug already taken'
+      case 'UNRESOLVED_DNS':
+        return 'URL hostname could not be resolved'
+      case 'PRIVATE_ADDRESS':
+        return 'URL resolves to a private or reserved address'
+      case 'EXPIRED':
+        break
+    }
+  }
+  return 'Unexpected error'
+}
+
+async function createUrlSafe(input: CreateUrlInput, baseUrl: string): Promise<BulkCreateUrlResult> {
+  try {
+    const result = await createUrl(input, baseUrl)
+    return { success: true, ...result }
+  } catch (err) {
+    return { success: false, originalUrl: input.originalUrl, error: messageForError(err) }
+  }
+}
+
+export async function createUrlsBulk(
+  inputs: CreateUrlInput[],
+  baseUrl: string,
+): Promise<BulkCreateUrlResult[]> {
+  // ponytail: full parallel fan-out. The 50-item cap on the input schema bounds worst-case
+  // concurrency (DNS lookups, page-meta fetches, DB inserts), so this stays simple instead of
+  // adding a concurrency limiter. Revisit if that cap grows a lot or the DB pool struggles.
+  return Promise.all(inputs.map((input) => createUrlSafe(input, baseUrl)))
 }
 
 export async function suggestAvailableSlugs(baseSlug: string): Promise<string[]> {

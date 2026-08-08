@@ -20,6 +20,7 @@ A self-hosted URL shortener that turns long, unwieldy links into clean and share
 - [Environment variables](#environment-variables)
 - [API reference](#api-reference)
   - [POST /urls](#post-urls)
+  - [POST /urls/bulk](#post-urlsbulk)
   - [PATCH /urls/:slug](#patch-urlsslug)
   - [GET /:slug](#get-slug)
 - [Database schema](#database-schema)
@@ -196,6 +197,7 @@ The `DATABASE_URL` defaults to the local `db` service (`postgresql://snip:snip@d
 | `CORS_ORIGIN`                       | No       | `BASE_URL`              | Allowed CORS origin. In production, set this to the web app's origin — `BASE_URL` is the API's own URL and is not a safe fallback     |
 | `RATE_LIMIT_CREATE_PER_MINUTE`      | No       | `10`                    | Max requests per minute for `POST /urls`                                                                                              |
 | `RATE_LIMIT_BULK_DELETE_PER_MINUTE` | No       | `20`                    | Max requests per minute for `DELETE /urls` (bulk delete)                                                                              |
+| `RATE_LIMIT_BULK_CREATE_PER_MINUTE` | No       | `3`                     | Max requests per minute for `POST /urls/bulk` (bulk create)                                                                           |
 | `DATABASE_POOL_MAX`                 | No       | `10`                    | Maximum number of connections in the database pool                                                                                    |
 | `API_KEY`                           | No       | —                       | When set, `POST /urls` and `DELETE /urls/:slug` require `Authorization: Bearer <key>`. Unset means those endpoints are public         |
 | `NODE_ENV`                          | No       | —                       | When set to `production`, log output is structured JSON (Pino default). Any other value enables `pino-pretty` for human-readable logs |
@@ -262,17 +264,18 @@ The dashboard password protects the web UI; the API key protects the API itself 
 
 An interactive API reference (powered by [Scalar](https://scalar.com)) is available at `GET /docs` when the API is running (e.g. http://localhost:3001/docs in development). The table below is a quick reference; the `/docs` page includes full request/response schemas and a live sandbox.
 
-| Method   | Path                | Auth required | Description                       |
-| -------- | ------------------- | ------------- | --------------------------------- |
-| `POST`   | `/urls`             | Yes           | Create a short URL                |
-| `GET`    | `/urls`             | Yes           | List short URLs (paginated)       |
-| `GET`    | `/urls/:slug/stats` | Yes           | Click statistics for a slug       |
-| `GET`    | `/preview/:slug`    | Yes           | URL metadata without redirecting  |
-| `PATCH`  | `/urls/:slug`       | Yes           | Update title, description, expiry |
-| `DELETE` | `/urls/:slug`       | Yes           | Delete a short URL                |
-| `DELETE` | `/urls`             | Yes           | Bulk delete short URLs            |
-| `GET`    | `/:slug`            | No            | Redirect to original URL          |
-| `GET`    | `/health`           | No            | Health check with DB connectivity |
+| Method   | Path                | Auth required | Description                        |
+| -------- | ------------------- | ------------- | ---------------------------------- |
+| `POST`   | `/urls`             | Yes           | Create a short URL                 |
+| `POST`   | `/urls/bulk`        | Yes           | Create up to 50 short URLs at once |
+| `GET`    | `/urls`             | Yes           | List short URLs (paginated)        |
+| `GET`    | `/urls/:slug/stats` | Yes           | Click statistics for a slug        |
+| `GET`    | `/preview/:slug`    | Yes           | URL metadata without redirecting   |
+| `PATCH`  | `/urls/:slug`       | Yes           | Update title, description, expiry  |
+| `DELETE` | `/urls/:slug`       | Yes           | Delete a short URL                 |
+| `DELETE` | `/urls`             | Yes           | Bulk delete short URLs             |
+| `GET`    | `/:slug`            | No            | Redirect to original URL           |
+| `GET`    | `/health`           | No            | Health check with DB connectivity  |
 
 "Auth required" means an `Authorization: Bearer <key>` header is needed when `API_KEY` is set (see [API key](#api-key)).
 
@@ -295,6 +298,19 @@ An interactive API reference (powered by [Scalar](https://scalar.com)) is availa
 | `422`  | URL hostname could not be resolved via DNS                                  |
 
 A `409` response includes a `suggestions` array of available alternative slugs (e.g. `["my-link-2", "my-link-3", "my-link-ab12"]`) so a client can offer them as one-click options instead of just erroring out.
+
+### POST /urls/bulk
+
+```json
+{
+  "urls": [
+    { "originalUrl": "https://example.com/one" },
+    { "originalUrl": "https://example.com/two", "customSlug": "two" }
+  ]
+}
+```
+
+Accepts 1–50 entries, each shaped like the `POST /urls` body. Always returns `200` with a `results` array (one entry per input, in order) — check each entry's `success` field, since individual URLs can fail (e.g. a taken slug) while others in the same request succeed. A failed entry looks like `{ "success": false, "originalUrl": "...", "error": "..." }`. The whole request is rejected with `400` only if the body itself is invalid (empty array, more than 50 entries, or a malformed entry). Rate-limited separately from `POST /urls` via `RATE_LIMIT_BULK_CREATE_PER_MINUTE` (default: 3 req/min), since one request can do up to 50x the work.
 
 ### PATCH /urls/:slug
 

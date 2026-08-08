@@ -8,6 +8,7 @@ vi.mock('../config.js', () => ({
     BASE_URL: 'http://localhost:3001',
     RATE_LIMIT_CREATE_PER_MINUTE: 10,
     RATE_LIMIT_BULK_DELETE_PER_MINUTE: 20,
+    RATE_LIMIT_BULK_CREATE_PER_MINUTE: 3,
     API_KEY: undefined as string | undefined,
   },
 }))
@@ -18,6 +19,7 @@ vi.mock('../services/url.service.js', async () => {
     ...(actual as Record<string, unknown>),
     getUrlList: vi.fn(),
     createUrl: vi.fn(),
+    createUrlsBulk: vi.fn(),
     getUrlStats: vi.fn(),
     deleteUrl: vi.fn(),
     deleteUrls: vi.fn(),
@@ -36,6 +38,7 @@ vi.mock('../lib/pagination.js', () => ({
 
 import {
   createUrl,
+  createUrlsBulk,
   getUrlStats,
   deleteUrl,
   deleteUrls,
@@ -333,6 +336,66 @@ describe('POST /urls', () => {
   })
 })
 
+describe('POST /urls/bulk', () => {
+  it('returns 200 with one result per input URL', async () => {
+    vi.mocked(createUrlsBulk).mockResolvedValue([
+      { ...mockUrlResult, success: true },
+      { success: false, originalUrl: 'https://blocked.example.com', error: 'Blocked' },
+    ])
+
+    const res = await app.inject({
+      method: 'POST',
+      url: '/urls/bulk',
+      payload: {
+        urls: [
+          { originalUrl: 'https://example.com' },
+          { originalUrl: 'https://blocked.example.com' },
+        ],
+      },
+    })
+
+    expect(res.statusCode).toBe(200)
+    expect(res.json().results).toHaveLength(2)
+    expect(res.json().results[0].success).toBe(true)
+    expect(res.json().results[1]).toEqual({
+      success: false,
+      originalUrl: 'https://blocked.example.com',
+      error: 'Blocked',
+    })
+  })
+
+  it('returns 400 for an empty urls array', async () => {
+    const res = await app.inject({ method: 'POST', url: '/urls/bulk', payload: { urls: [] } })
+
+    expect(res.statusCode).toBe(400)
+    expect(createUrlsBulk).not.toHaveBeenCalled()
+  })
+
+  it('returns 400 when a body has no urls field', async () => {
+    const res = await app.inject({ method: 'POST', url: '/urls/bulk', payload: {} })
+
+    expect(res.statusCode).toBe(400)
+  })
+
+  it('returns 400 when more than 50 URLs are provided', async () => {
+    const urls = Array.from({ length: 51 }, (_, i) => ({ originalUrl: `https://example.com/${i}` }))
+    const res = await app.inject({ method: 'POST', url: '/urls/bulk', payload: { urls } })
+
+    expect(res.statusCode).toBe(400)
+    expect(createUrlsBulk).not.toHaveBeenCalled()
+  })
+
+  it('returns 400 when one entry in the array is invalid', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: '/urls/bulk',
+      payload: { urls: [{ originalUrl: 'not-a-url' }] },
+    })
+
+    expect(res.statusCode).toBe(400)
+  })
+})
+
 describe('GET /urls/:slug/stats', () => {
   it('returns 200 with stats', async () => {
     vi.mocked(getUrlStats).mockResolvedValue({
@@ -562,6 +625,32 @@ describe('API_KEY enforcement', () => {
       })
 
       expect(res.statusCode).toBe(201)
+    })
+  })
+
+  describe('POST /urls/bulk', () => {
+    it('returns 401 when API_KEY is set and no Authorization header is provided', async () => {
+      const res = await app.inject({
+        method: 'POST',
+        url: '/urls/bulk',
+        payload: { urls: [{ originalUrl: 'https://example.com' }] },
+      })
+
+      expect(res.statusCode).toBe(401)
+      expect(res.json().error).toBe('Unauthorized')
+    })
+
+    it('returns 200 when API_KEY is set and correct Authorization header is provided', async () => {
+      vi.mocked(createUrlsBulk).mockResolvedValue([{ ...mockUrlResult, success: true }])
+
+      const res = await app.inject({
+        method: 'POST',
+        url: '/urls/bulk',
+        payload: { urls: [{ originalUrl: 'https://example.com' }] },
+        headers: { authorization: 'Bearer test-api-key' },
+      })
+
+      expect(res.statusCode).toBe(200)
     })
   })
 

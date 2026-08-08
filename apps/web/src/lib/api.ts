@@ -6,6 +6,7 @@ import type {
   UrlRecord,
   UrlStats,
   BulkDeleteUrlsResponse,
+  BulkCreateUrlsResponse,
 } from '@snip/types'
 
 // API_URL is used for server-side fetches (e.g. http://api:3001 inside Docker).
@@ -89,6 +90,12 @@ export const api = {
     proxyFetch('/api/proxy/urls', {
       method: 'POST',
       body: JSON.stringify(input),
+    }),
+
+  createUrlsBulk: (urls: CreateUrlInput[]): Promise<BulkCreateUrlsResponse> =>
+    proxyFetch('/api/proxy/urls/bulk', {
+      method: 'POST',
+      body: JSON.stringify({ urls }),
     }),
 
   getStats: (slug: string): Promise<UrlStats> => apiFetch(`/urls/${slug}/stats`),
