@@ -73,6 +73,7 @@ vi.mock('ipaddr.js', () => ({
 
 import {
   createUrl,
+  suggestAvailableSlugs,
   findUrlBySlug,
   recordClick,
   getUrlStats,
@@ -377,6 +378,24 @@ describe('createUrl', () => {
     expect(result.title).toBe('Override Title')
     expect(result.description).toBe('Scraped desc')
     expect(mockFetch).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('suggestAvailableSlugs', () => {
+  it('returns all candidates when none are taken', async () => {
+    mockSelectChain.mockReturnValueOnce(makeSelectChain([]))
+
+    const result = await suggestAvailableSlugs('my-link')
+
+    expect(result).toEqual(['my-link-2', 'my-link-3', 'my-link-abc12345'])
+  })
+
+  it('excludes candidates that are already taken', async () => {
+    mockSelectChain.mockReturnValueOnce(makeSelectChain([{ slug: 'my-link-2' }]))
+
+    const result = await suggestAvailableSlugs('my-link')
+
+    expect(result).toEqual(['my-link-3', 'my-link-abc12345'])
   })
 })
 

@@ -31,7 +31,11 @@ async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({}))
-    throw new ApiError(res.status, (body as { error?: string }).error ?? res.statusText)
+    throw new ApiError(
+      res.status,
+      (body as { error?: string }).error ?? res.statusText,
+      (body as { suggestions?: string[] }).suggestions,
+    )
   }
 
   if (res.status === 204) return undefined as T
@@ -51,7 +55,11 @@ async function proxyFetch<T>(path: string, init?: RequestInit): Promise<T> {
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({}))
-    throw new ApiError(res.status, (body as { error?: string }).error ?? res.statusText)
+    throw new ApiError(
+      res.status,
+      (body as { error?: string }).error ?? res.statusText,
+      (body as { suggestions?: string[] }).suggestions,
+    )
   }
 
   if (res.status === 204) return undefined as T
@@ -62,6 +70,8 @@ export class ApiError extends Error {
   constructor(
     public readonly status: number,
     message: string,
+    // Only present on 409 SLUG_TAKEN responses from POST /urls.
+    public readonly suggestions?: string[],
   ) {
     super(message)
     this.name = 'ApiError'

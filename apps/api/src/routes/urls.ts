@@ -7,6 +7,7 @@ import {
   deleteUrls,
   getUrlList,
   getUrlPreview,
+  suggestAvailableSlugs,
   updateUrl,
   UrlFetchError,
 } from '../services/url.service.js'
@@ -140,7 +141,14 @@ export async function urlRoutes(fastify: FastifyInstance) {
           409: {
             description: 'Slug already taken',
             type: 'object',
-            properties: { error: { type: 'string' } },
+            properties: {
+              error: { type: 'string' },
+              suggestions: {
+                type: 'array',
+                items: { type: 'string' },
+                description: 'Available alternative slugs based on the one requested',
+              },
+            },
           },
           422: {
             description: 'URL hostname could not be resolved',
@@ -169,8 +177,12 @@ export async function urlRoutes(fastify: FastifyInstance) {
               return reply
                 .status(400)
                 .send({ error: 'Cannot shorten a URL pointing to this service' })
-            case 'SLUG_TAKEN':
-              return reply.status(409).send({ error: 'Slug already taken' })
+            case 'SLUG_TAKEN': {
+              const suggestions = parsed.data.customSlug
+                ? await suggestAvailableSlugs(parsed.data.customSlug)
+                : []
+              return reply.status(409).send({ error: 'Slug already taken', suggestions })
+            }
             case 'UNRESOLVED_DNS':
               return reply.status(422).send({ error: 'URL hostname could not be resolved' })
             case 'PRIVATE_ADDRESS':

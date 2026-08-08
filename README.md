@@ -20,6 +20,7 @@ A self-hosted URL shortener that turns long, unwieldy links into clean and share
 - [Environment variables](#environment-variables)
 - [API reference](#api-reference)
   - [POST /urls](#post-urls)
+  - [PATCH /urls/:slug](#patch-urlsslug)
   - [GET /:slug](#get-slug)
 - [Database schema](#database-schema)
 
@@ -291,6 +292,8 @@ An interactive API reference (powered by [Scalar](https://scalar.com)) is availa
 | `400`  | Invalid body or URL points to this service or resolves to a private address |
 | `409`  | `customSlug` is already taken                                               |
 | `422`  | URL hostname could not be resolved via DNS                                  |
+
+A `409` response includes a `suggestions` array of available alternative slugs (e.g. `["my-link-2", "my-link-3", "my-link-ab12"]`) so a client can offer them as one-click options instead of just erroring out.
 
 ### PATCH /urls/:slug
 

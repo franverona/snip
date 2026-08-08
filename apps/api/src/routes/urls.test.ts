@@ -22,6 +22,7 @@ vi.mock('../services/url.service.js', async () => {
     deleteUrl: vi.fn(),
     deleteUrls: vi.fn(),
     getUrlPreview: vi.fn(),
+    suggestAvailableSlugs: vi.fn(),
     updateUrl: vi.fn(),
   }
 })
@@ -40,6 +41,7 @@ import {
   deleteUrls,
   getUrlList,
   getUrlPreview,
+  suggestAvailableSlugs,
   updateUrl,
   UrlFetchError,
 } from '../services/url.service.js'
@@ -204,7 +206,7 @@ describe('POST /urls', () => {
     expect(res.json().error).toMatch(/service/i)
   })
 
-  it('returns 409 for SLUG_TAKEN', async () => {
+  it('returns 409 with no suggestions for SLUG_TAKEN when no customSlug was requested', async () => {
     vi.mocked(createUrl).mockRejectedValue(new UrlFetchError('SLUG_TAKEN'))
 
     const res = await app.inject({
@@ -215,6 +217,23 @@ describe('POST /urls', () => {
 
     expect(res.statusCode).toBe(409)
     expect(res.json().error).toBe('Slug already taken')
+    expect(res.json().suggestions).toEqual([])
+    expect(suggestAvailableSlugs).not.toHaveBeenCalled()
+  })
+
+  it('returns 409 with alternative slug suggestions for SLUG_TAKEN', async () => {
+    vi.mocked(createUrl).mockRejectedValue(new UrlFetchError('SLUG_TAKEN'))
+    vi.mocked(suggestAvailableSlugs).mockResolvedValue(['my-link-2', 'my-link-3'])
+
+    const res = await app.inject({
+      method: 'POST',
+      url: '/urls',
+      payload: { originalUrl: 'https://example.com', customSlug: 'my-link' },
+    })
+
+    expect(res.statusCode).toBe(409)
+    expect(res.json().suggestions).toEqual(['my-link-2', 'my-link-3'])
+    expect(suggestAvailableSlugs).toHaveBeenCalledWith('my-link')
   })
 
   it('returns 422 for UNRESOLVED_DNS', async () => {
