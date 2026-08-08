@@ -4,10 +4,14 @@ import { useState } from 'react'
 import styled from 'styled-components'
 import { api, ApiError } from '@/lib/api'
 import { CreateUrlInputSchema, type CreateUrlResponse } from '@snip/types'
-import { Button } from './ui'
-import { useToast } from './Toast'
+import { Button } from '../ui'
+import { useToast } from '../Toast'
 import { QRCodeSVG } from 'qrcode.react'
-import { QRDownloadButton } from './QRDownloadButton'
+import { QRDownloadButton } from '../QRDownloadButton'
+import { Field, Label, Input, FieldErrors } from './FormField'
+import { CustomSlugField } from './CustomSlugField'
+import { ExpiryField } from './ExpiryField'
+import { AdvancedOptions } from './AdvancedOptions'
 
 // ---- Styled components ----
 
@@ -15,42 +19,6 @@ const Form = styled.form`
   display: flex;
   flex-direction: column;
   gap: 1rem;
-`
-
-const Field = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.375rem;
-`
-
-const Label = styled.label`
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: ${({ theme }) => theme.colors.textSecondary};
-`
-
-const Hint = styled.span`
-  color: ${({ theme }) => theme.colors.textHint};
-  font-weight: 400;
-`
-
-const Input = styled.input`
-  width: 100%;
-  border: 1px solid ${({ theme }) => theme.colors.inputBorder};
-  border-radius: 0.375rem;
-  padding: 0.5rem 0.75rem;
-  font-size: 0.875rem;
-  outline: none;
-  background: ${({ theme }) => theme.colors.surface};
-  color: ${({ theme }) => theme.colors.textPrimary};
-  transition:
-    border-color 0.15s,
-    box-shadow 0.15s;
-
-  &:focus {
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
-  }
 `
 
 const TwoCol = styled.div`
@@ -63,56 +31,8 @@ const TwoCol = styled.div`
   }
 `
 
-const AdvancedToggle = styled.button`
-  background: none;
-  border: none;
-  padding: 0;
-  font-size: 0.8125rem;
-  color: ${({ theme }) => theme.colors.accent};
-  cursor: pointer;
-  text-align: left;
-  width: fit-content;
-
-  &:hover {
-    text-decoration: underline;
-  }
-`
-
-const AdvancedSection = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-`
-
-const Textarea = styled.textarea`
-  width: 100%;
-  border: 1px solid ${({ theme }) => theme.colors.inputBorder};
-  border-radius: 0.375rem;
-  padding: 0.5rem 0.75rem;
-  font-size: 0.875rem;
-  outline: none;
-  background: ${({ theme }) => theme.colors.surface};
-  color: ${({ theme }) => theme.colors.textPrimary};
-  resize: vertical;
-  font-family: inherit;
-  transition:
-    border-color 0.15s,
-    box-shadow 0.15s;
-
-  &:focus {
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
-  }
-`
-
 const SubmitButton = styled(Button)`
   width: 100%;
-`
-
-const FieldErrorMessage = styled.p`
-  font-size: 0.75rem;
-  color: ${({ theme }) => theme.colors.errorText};
-  margin: 0;
 `
 
 const ErrorBox = styled.div`
@@ -248,18 +168,6 @@ const StatsLink = styled.a`
 
 // ---- Component ----
 
-function FieldErrors({ errors }: { errors?: string[] }) {
-  if (!errors?.length) return null
-
-  return (
-    <>
-      {errors.map((msg) => (
-        <FieldErrorMessage key={msg}>{msg}</FieldErrorMessage>
-      ))}
-    </>
-  )
-}
-
 export function ShortenForm() {
   const { showToast } = useToast()
 
@@ -268,7 +176,6 @@ export function ShortenForm() {
   const [expiresAt, setExpiresAt] = useState('')
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
-  const [showAdvanced, setShowAdvanced] = useState(false)
   const [result, setResult] = useState<CreateUrlResponse | null>(null)
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({})
   const [apiError, setApiError] = useState<string | null>(null)
@@ -372,72 +279,22 @@ export function ShortenForm() {
         </Field>
 
         <TwoCol>
-          <Field>
-            <Label htmlFor="slug">
-              Custom slug <Hint>(optional)</Hint>
-            </Label>
-            <Input
-              id="slug"
-              type="text"
-              placeholder="my-link"
-              maxLength={50}
-              value={customSlug}
-              onChange={(e) => setCustomSlug(e.target.value)}
-            />
-            <FieldErrors errors={fieldErrors.customSlug} />
-          </Field>
-
-          <Field>
-            <Label htmlFor="expires">
-              Expires at <Hint>(optional)</Hint>
-            </Label>
-            <Input
-              id="expires"
-              type="datetime-local"
-              value={expiresAt}
-              onChange={(e) => setExpiresAt(e.target.value)}
-            />
-            <FieldErrors errors={fieldErrors.expiresAt} />
-          </Field>
+          <CustomSlugField
+            value={customSlug}
+            onChange={setCustomSlug}
+            errors={fieldErrors.customSlug}
+          />
+          <ExpiryField value={expiresAt} onChange={setExpiresAt} errors={fieldErrors.expiresAt} />
         </TwoCol>
 
-        <AdvancedToggle type="button" onClick={() => setShowAdvanced((v) => !v)}>
-          {showAdvanced ? '▾ Hide advanced options' : '▸ Advanced options'}
-        </AdvancedToggle>
-
-        {showAdvanced && (
-          <AdvancedSection>
-            <Field>
-              <Label htmlFor="title">
-                Title <Hint>(optional — overrides scraped title)</Hint>
-              </Label>
-              <Input
-                id="title"
-                type="text"
-                placeholder="My awesome link"
-                maxLength={200}
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-              />
-              <FieldErrors errors={fieldErrors.title} />
-            </Field>
-
-            <Field>
-              <Label htmlFor="description">
-                Description <Hint>(optional — overrides scraped description)</Hint>
-              </Label>
-              <Textarea
-                id="description"
-                rows={3}
-                placeholder="A brief description of the destination page"
-                maxLength={500}
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-              />
-              <FieldErrors errors={fieldErrors.description} />
-            </Field>
-          </AdvancedSection>
-        )}
+        <AdvancedOptions
+          title={title}
+          onTitleChange={setTitle}
+          titleErrors={fieldErrors.title}
+          description={description}
+          onDescriptionChange={setDescription}
+          descriptionErrors={fieldErrors.description}
+        />
 
         <SubmitButton color="primary" type="submit" disabled={loading}>
           {loading ? 'Shortening…' : 'Shorten URL'}
@@ -463,7 +320,7 @@ export function ShortenForm() {
         <ResultBox>
           <ResultTitle>
             {result.existing
-              ? 'This URL was already shortened — here\u2019s your existing link.'
+              ? 'This URL was already shortened — here’s your existing link.'
               : 'Your short URL is ready!'}
           </ResultTitle>
           <QRCodeSVG

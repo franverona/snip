@@ -16,9 +16,11 @@ import type {
   UrlListRecordSchema,
   BulkDeleteUrlsInputSchema,
   BulkDeleteUrlsResponseSchema,
+  UpdateUrlInputSchema,
 } from './schemas.js'
 
 export type CreateUrlInput = z.infer<typeof CreateUrlInputSchema>
+export type UpdateUrlInput = z.infer<typeof UpdateUrlInputSchema>
 export type CreateUrlResponse = z.infer<typeof CreateUrlResponseSchema>
 export type UrlRecord = z.infer<typeof UrlRecordSchema>
 export type ClickRecord = z.infer<typeof ClickRecordSchema>

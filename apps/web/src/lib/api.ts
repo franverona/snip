@@ -1,7 +1,9 @@
 import type {
   CreateUrlInput,
   CreateUrlResponse,
+  UpdateUrlInput,
   UrlList,
+  UrlRecord,
   UrlStats,
   BulkDeleteUrlsResponse,
 } from '@snip/types'
@@ -90,6 +92,12 @@ export const api = {
     }),
 
   getStats: (slug: string): Promise<UrlStats> => apiFetch(`/urls/${slug}/stats`),
+
+  updateUrl: (slug: string, input: UpdateUrlInput): Promise<UrlRecord> =>
+    proxyFetch(`/api/proxy/urls/${slug}`, {
+      method: 'PATCH',
+      body: JSON.stringify(input),
+    }),
 
   deleteUrl: (slug: string): Promise<void> =>
     proxyFetch(`/api/proxy/urls/${slug}`, { method: 'DELETE' }),

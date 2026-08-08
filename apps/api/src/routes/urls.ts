@@ -1,5 +1,5 @@
 import type { FastifyInstance } from 'fastify'
-import { CreateUrlInputSchema, BulkDeleteUrlsInputSchema } from '@snip/types'
+import { CreateUrlInputSchema, BulkDeleteUrlsInputSchema, UpdateUrlInputSchema } from '@snip/types'
 import {
   createUrl,
   getUrlStats,
@@ -8,6 +8,7 @@ import {
   getUrlList,
   getUrlPreview,
   suggestAvailableSlugs,
+  updateUrl,
   UrlFetchError,
 } from '../services/url.service.js'
 import { env } from '../config.js'
@@ -300,6 +301,89 @@ export async function urlRoutes(fastify: FastifyInstance) {
         return reply.status(404).send({ error: 'URL not found' })
       }
       return reply.status(204).send()
+    },
+  )
+
+  // PATCH /urls/:slug
+  fastify.patch<{ Params: { slug: string } }>(
+    '/urls/:slug',
+    {
+      preHandler: [requireApiKey],
+      schema: {
+        tags: ['URLs'],
+        summary: 'Update a short URL',
+        description:
+          'Partially updates title, description, and/or expiry. Omit a field to leave it unchanged, or send it as null to clear it.',
+        security: routeSecurity,
+        params: {
+          type: 'object',
+          properties: { slug: { type: 'string', description: 'Short URL slug' } },
+        },
+        body: {
+          type: 'object',
+          properties: {
+            title: {
+              type: 'string',
+              maxLength: 200,
+              nullable: true,
+              description: 'New title, or null to clear it',
+            },
+            description: {
+              type: 'string',
+              maxLength: 500,
+              nullable: true,
+              description: 'New description, or null to clear it',
+            },
+            expiresAt: {
+              type: 'string',
+              format: 'date-time',
+              nullable: true,
+              description: 'New expiry timestamp in ISO 8601 format, or null to remove expiry',
+            },
+          },
+        },
+        response: {
+          200: {
+            description: 'URL updated',
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              slug: { type: 'string' },
+              originalUrl: { type: 'string' },
+              customSlug: { type: 'boolean' },
+              title: { type: 'string', nullable: true },
+              description: { type: 'string', nullable: true },
+              expiresAt: { type: 'string', format: 'date-time', nullable: true },
+              createdAt: { type: 'string', format: 'date-time' },
+            },
+          },
+          400: {
+            description: 'Validation error',
+            type: 'object',
+            properties: { error: { type: 'string' }, message: { type: 'string' } },
+          },
+          404: {
+            description: 'URL not found',
+            type: 'object',
+            properties: { error: { type: 'string' } },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      const parsed = UpdateUrlInputSchema.safeParse(request.body)
+      if (!parsed.success) {
+        return reply.status(400).send({
+          error: 'Validation error',
+          message: parsed.error.issues.map((i) => i.message).join(', '),
+        })
+      }
+
+      const updated = await updateUrl(request.params.slug, parsed.data)
+      if (!updated) {
+        return reply.status(404).send({ error: 'URL not found' })
+      }
+      return reply.send(updated)
     },
   )
 

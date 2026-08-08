@@ -29,6 +29,16 @@ export const SlugParamSchema = z.object({
   slug: z.string().min(1),
 })
 
+export const UpdateUrlInputSchema = z
+  .object({
+    title: z.string().max(200).nullable().optional(),
+    description: z.string().max(500).nullable().optional(),
+    expiresAt: z.iso.datetime().nullable().optional(),
+  })
+  .refine((data) => Object.keys(data).length > 0, {
+    message: 'At least one field (title, description, expiresAt) must be provided',
+  })
+
 // ---- Response schemas ----
 
 export const UrlRecordSchema = z.object({
