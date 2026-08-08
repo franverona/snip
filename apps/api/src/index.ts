@@ -1,5 +1,6 @@
 import Fastify from 'fastify'
 import cors from '@fastify/cors'
+import helmet from '@fastify/helmet'
 import swagger from '@fastify/swagger'
 import ScalarApiReference from '@scalar/fastify-api-reference'
 import { env } from './config.js'
@@ -22,6 +23,13 @@ await fastify.register(import('@fastify/rate-limit'), {
 
 await fastify.register(cors, {
   origin: env.CORS_ORIGIN ?? env.BASE_URL,
+})
+
+// ponytail: CSP disabled — Scalar's /docs UI needs inline scripts/styles to render and
+// isn't worth a hand-tuned policy. Everything else (frame/sniff/referrer/HSTS protection)
+// stays on. Scope a real CSP to /docs if that page ever handles untrusted content.
+await fastify.register(helmet, {
+  contentSecurityPolicy: false,
 })
 
 await fastify.register(swagger, {
