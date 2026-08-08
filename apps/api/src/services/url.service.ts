@@ -217,42 +217,43 @@ export async function getUrlStats(slug: string, baseUrl: string): Promise<UrlSta
   const ago7d = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
   const ago30d = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
 
-  const [clickStats] = await db
-    .select({
-      total: count(),
-      last24h: sql<number>`count(*) filter (where ${clicks.clickedAt} >= ${ago24h})`,
-      last7d: sql<number>`count(*) filter (where ${clicks.clickedAt} >= ${ago7d})`,
-    })
-    .from(clicks)
-    .where(eq(clicks.urlId, url.id))
-
-  const recentClicks = await db.query.clicks.findMany({
-    where: eq(clicks.urlId, url.id),
-    orderBy: (clicks, { desc }) => [desc(clicks.clickedAt)],
-    limit: 10,
-  })
-
-  const clicksByDay = await db
-    .select({
-      date: sql<string>`date_trunc('day', ${clicks.clickedAt})::date::text`,
-      count: count(),
-    })
-    .from(clicks)
-    .where(and(eq(clicks.urlId, url.id), gte(clicks.clickedAt, ago30d)))
-    .groupBy(sql`date_trunc('day', ${clicks.clickedAt})`)
-    .orderBy(sql`date_trunc('day', ${clicks.clickedAt})`)
-
   // Extract hostname via split_part to avoid backslash escape issues in tagged template literals.
   // split_part(referer, '://', 2) → 'host/path', split_part(..., '/', 1) → 'host'
   const refDomain = sql<string>`case when ${clicks.referer} is null or ${clicks.referer} = '' then 'Direct' when ${clicks.referer} ~ '^https?://' then lower(split_part(split_part(${clicks.referer}, '://', 2), '/', 1)) else 'Direct' end`
 
-  const referrers = await db
-    .select({ domain: refDomain, count: count() })
-    .from(clicks)
-    .where(eq(clicks.urlId, url.id))
-    .groupBy(refDomain)
-    .orderBy(sql`count(*) desc`)
-    .limit(10)
+  // These four queries are independent reads over the same clicks rows — fire them as one
+  // round trip instead of awaiting each in turn.
+  const [[clickStats], recentClicks, clicksByDay, referrers] = await Promise.all([
+    db
+      .select({
+        total: count(),
+        last24h: sql<number>`count(*) filter (where ${clicks.clickedAt} >= ${ago24h})`,
+        last7d: sql<number>`count(*) filter (where ${clicks.clickedAt} >= ${ago7d})`,
+      })
+      .from(clicks)
+      .where(eq(clicks.urlId, url.id)),
+    db.query.clicks.findMany({
+      where: eq(clicks.urlId, url.id),
+      orderBy: (clicks, { desc }) => [desc(clicks.clickedAt)],
+      limit: 10,
+    }),
+    db
+      .select({
+        date: sql<string>`date_trunc('day', ${clicks.clickedAt})::date::text`,
+        count: count(),
+      })
+      .from(clicks)
+      .where(and(eq(clicks.urlId, url.id), gte(clicks.clickedAt, ago30d)))
+      .groupBy(sql`date_trunc('day', ${clicks.clickedAt})`)
+      .orderBy(sql`date_trunc('day', ${clicks.clickedAt})`),
+    db
+      .select({ domain: refDomain, count: count() })
+      .from(clicks)
+      .where(eq(clicks.urlId, url.id))
+      .groupBy(refDomain)
+      .orderBy(sql`count(*) desc`)
+      .limit(10),
+  ])
 
   const dayMap = new Map<string, number>()
   for (let i = 29; i >= 0; i--) {
