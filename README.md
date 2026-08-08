@@ -266,6 +266,7 @@ An interactive API reference (powered by [Scalar](https://scalar.com)) is availa
 | `GET`    | `/urls`             | Yes           | List short URLs (paginated)       |
 | `GET`    | `/urls/:slug/stats` | Yes           | Click statistics for a slug       |
 | `GET`    | `/preview/:slug`    | Yes           | URL metadata without redirecting  |
+| `PATCH`  | `/urls/:slug`       | Yes           | Update title, description, expiry |
 | `DELETE` | `/urls/:slug`       | Yes           | Delete a short URL                |
 | `DELETE` | `/urls`             | Yes           | Bulk delete short URLs            |
 | `GET`    | `/:slug`            | No            | Redirect to original URL          |
@@ -290,6 +291,18 @@ An interactive API reference (powered by [Scalar](https://scalar.com)) is availa
 | `400`  | Invalid body or URL points to this service or resolves to a private address |
 | `409`  | `customSlug` is already taken                                               |
 | `422`  | URL hostname could not be resolved via DNS                                  |
+
+### PATCH /urls/:slug
+
+```json
+{
+  "title": "New title",
+  "description": null,
+  "expiresAt": "2027-01-01T00:00:00.000Z"
+}
+```
+
+All fields are optional — omit a field to leave it unchanged, or send it as `null` to clear it. At least one field must be provided. Returns `200` with the updated record, `400` for an empty or invalid body, or `404` if the slug doesn't exist.
 
 ### GET /:slug
 

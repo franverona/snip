@@ -1,9 +1,10 @@
 'use client'
 
+import { useState } from 'react'
 import styled from 'styled-components'
 import type { UrlStats } from '@snip/types'
 import { Button, useConfirmDialog } from './ui'
-import { api } from '@/lib/api'
+import { api, ApiError } from '@/lib/api'
 import { useRouter } from 'next/navigation'
 import { useToast } from './Toast'
 import { QRCodeSVG } from 'qrcode.react'
@@ -215,7 +216,74 @@ const ExpiredBanner = styled.div`
   margin-bottom: 0.75rem;
 `
 
+const EditField = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  margin-bottom: 1rem;
+
+  &:last-of-type {
+    margin-bottom: 0;
+  }
+`
+
+const EditLabel = styled.label`
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: ${({ theme }) => theme.colors.textSecondary};
+`
+
+const EditInput = styled.input`
+  width: 100%;
+  border: 1px solid ${({ theme }) => theme.colors.inputBorder};
+  border-radius: 0.375rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  outline: none;
+  background: ${({ theme }) => theme.colors.surface};
+  color: ${({ theme }) => theme.colors.textPrimary};
+`
+
+const EditTextarea = styled.textarea`
+  width: 100%;
+  border: 1px solid ${({ theme }) => theme.colors.inputBorder};
+  border-radius: 0.375rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  outline: none;
+  background: ${({ theme }) => theme.colors.surface};
+  color: ${({ theme }) => theme.colors.textPrimary};
+  font-family: inherit;
+  resize: vertical;
+`
+
+const EditActions = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+`
+
+const CancelEditButton = styled.button`
+  background: ${({ theme }) => theme.colors.surfaceHover};
+  color: ${({ theme }) => theme.colors.textPrimary};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: 0.375rem;
+  padding: 0.625rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+`
+
 // ---- Component ----
+
+// datetime-local inputs want "YYYY-MM-DDTHH:mm" in local time, no timezone suffix —
+// shift by the local offset so the displayed wall-clock time round-trips correctly
+// through `new Date(value).toISOString()` (which parses the un-suffixed string as local).
+function toDatetimeLocal(iso: string | null): string {
+  if (!iso) return ''
+  const d = new Date(iso)
+  return new Date(d.getTime() - d.getTimezoneOffset() * 60_000).toISOString().slice(0, 16)
+}
 
 interface Props {
   stats: UrlStats
@@ -228,6 +296,12 @@ export function StatsView({ stats, slug }: Props) {
   const { openConfirmDialog, confirmDialog } = useConfirmDialog()
   const { url, totalClicks, clicksLast24h, clicksLast7d } = stats
   const maxClicks = Math.max(totalClicks, 1)
+
+  const [isEditing, setIsEditing] = useState(false)
+  const [editTitle, setEditTitle] = useState(url.title ?? '')
+  const [editDescription, setEditDescription] = useState(url.description ?? '')
+  const [editExpiresAt, setEditExpiresAt] = useState(toDatetimeLocal(url.expiresAt))
+  const [saving, setSaving] = useState(false)
 
   function pct(v: number) {
     return Math.round((v / maxClicks) * 100)
@@ -251,6 +325,32 @@ export function StatsView({ stats, slug }: Props) {
     })
   }
 
+  function startEditing() {
+    setEditTitle(url.title ?? '')
+    setEditDescription(url.description ?? '')
+    setEditExpiresAt(toDatetimeLocal(url.expiresAt))
+    setIsEditing(true)
+  }
+
+  async function handleSave(e: React.FormEvent) {
+    e.preventDefault()
+    setSaving(true)
+    try {
+      await api.updateUrl(slug, {
+        title: editTitle || null,
+        description: editDescription || null,
+        expiresAt: editExpiresAt ? new Date(editExpiresAt).toISOString() : null,
+      })
+      showToast('URL updated', 'success')
+      setIsEditing(false)
+      router.refresh()
+    } catch (err) {
+      showToast(err instanceof ApiError ? err.message : 'Failed to update the URL.', 'error')
+    } finally {
+      setSaving(false)
+    }
+  }
+
   const isExpired = url.expiresAt ? new Date(url.expiresAt) < new Date() : false
   const expiresAtFormatted = url.expiresAt
     ? new Date(url.expiresAt).toLocaleDateString('en-US', { dateStyle: 'long' })
@@ -263,6 +363,9 @@ export function StatsView({ stats, slug }: Props) {
         <PageTitle>
           Stats for <span>/{slug}</span>
         </PageTitle>
+        <Button type="button" onClick={startEditing}>
+          Edit
+        </Button>
         <Button color="error" onClick={handleDelete}>
           Delete
         </Button>
@@ -279,6 +382,49 @@ export function StatsView({ stats, slug }: Props) {
         <ExpiredBanner>
           This URL expired on {expiresAtFormatted} and now returns 410 Gone.
         </ExpiredBanner>
+      )}
+
+      {isEditing && (
+        <Card as="form" onSubmit={handleSave}>
+          <CardLabel style={{ marginBottom: '0.75rem' }}>Edit URL</CardLabel>
+          <EditField>
+            <EditLabel htmlFor="edit-title">Title</EditLabel>
+            <EditInput
+              id="edit-title"
+              type="text"
+              maxLength={200}
+              value={editTitle}
+              onChange={(e) => setEditTitle(e.target.value)}
+            />
+          </EditField>
+          <EditField>
+            <EditLabel htmlFor="edit-description">Description</EditLabel>
+            <EditTextarea
+              id="edit-description"
+              rows={3}
+              maxLength={500}
+              value={editDescription}
+              onChange={(e) => setEditDescription(e.target.value)}
+            />
+          </EditField>
+          <EditField>
+            <EditLabel htmlFor="edit-expires">Expires at</EditLabel>
+            <EditInput
+              id="edit-expires"
+              type="datetime-local"
+              value={editExpiresAt}
+              onChange={(e) => setEditExpiresAt(e.target.value)}
+            />
+          </EditField>
+          <EditActions>
+            <Button type="submit" disabled={saving}>
+              {saving ? 'Saving…' : 'Save'}
+            </Button>
+            <CancelEditButton type="button" onClick={() => setIsEditing(false)}>
+              Cancel
+            </CancelEditButton>
+          </EditActions>
+        </Card>
       )}
 
       <DetailsGrid>
