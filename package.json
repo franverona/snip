@@ -12,6 +12,7 @@
     "format:check": "prettier --check .",
     "test:api": "pnpm --filter api run test",
     "test:web": "pnpm --filter web run test",
+    "test:e2e": "pnpm --filter e2e run test",
     "prepare": "husky"
   },
   "devDependencies": {
