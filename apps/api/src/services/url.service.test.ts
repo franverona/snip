@@ -8,6 +8,8 @@ const {
   mockInsertValues,
   mockSelectChain,
   mockDeleteReturning,
+  mockUpdateReturning,
+  mockUpdateSet,
   mockFetch,
 } = vi.hoisted(() => {
   function makeSelectChain(result: unknown) {
@@ -29,6 +31,9 @@ const {
   const mockInsertReturning = vi.fn()
   const mockInsertValues = vi.fn(() => ({ returning: mockInsertReturning }))
 
+  const mockUpdateReturning = vi.fn()
+  const mockUpdateSet = vi.fn(() => ({ where: () => ({ returning: mockUpdateReturning }) }))
+
   return {
     makeSelectChain,
     mockFindFirstUrl: vi.fn(),
@@ -37,6 +42,8 @@ const {
     mockInsertValues,
     mockSelectChain: vi.fn(() => makeSelectChain([])),
     mockDeleteReturning: vi.fn(),
+    mockUpdateReturning,
+    mockUpdateSet,
     mockFetch,
   }
 })
@@ -50,6 +57,7 @@ vi.mock('../db/client.js', () => ({
     insert: () => ({ values: mockInsertValues }),
     select: mockSelectChain,
     delete: () => ({ where: () => ({ returning: mockDeleteReturning }) }),
+    update: () => ({ set: mockUpdateSet }),
   },
 }))
 
@@ -72,6 +80,7 @@ import {
   deleteUrls,
   getUrlList,
   getUrlPreview,
+  updateUrl,
 } from './url.service.js'
 import dns from 'node:dns/promises'
 import ipaddr from 'ipaddr.js'
@@ -455,6 +464,43 @@ describe('getUrlStats', () => {
       { domain: 'google.com', count: 3 },
       { domain: 'Direct', count: 2 },
     ])
+  })
+})
+
+describe('updateUrl', () => {
+  it('updates only the provided fields', async () => {
+    mockUpdateReturning.mockResolvedValue([{ ...mockUrlRow, title: 'New title' }])
+
+    const result = await updateUrl('abc12345', { title: 'New title' })
+
+    expect(mockUpdateSet).toHaveBeenCalledWith({ title: 'New title' })
+    expect(result?.title).toBe('New title')
+  })
+
+  it('clears a field when it is explicitly set to null', async () => {
+    mockUpdateReturning.mockResolvedValue([{ ...mockUrlRow, description: null }])
+
+    await updateUrl('abc12345', { description: null })
+
+    expect(mockUpdateSet).toHaveBeenCalledWith({ description: null })
+  })
+
+  it('converts expiresAt to a Date, or null when cleared', async () => {
+    mockUpdateReturning.mockResolvedValue([mockUrlRow])
+
+    await updateUrl('abc12345', { expiresAt: '2025-01-01T00:00:00.000Z' })
+    expect(mockUpdateSet).toHaveBeenCalledWith({ expiresAt: new Date('2025-01-01T00:00:00.000Z') })
+
+    await updateUrl('abc12345', { expiresAt: null })
+    expect(mockUpdateSet).toHaveBeenCalledWith({ expiresAt: null })
+  })
+
+  it('returns null when the slug does not exist', async () => {
+    mockUpdateReturning.mockResolvedValue([])
+
+    const result = await updateUrl('notexist', { title: 'New title' })
+
+    expect(result).toBeNull()
   })
 })
 

@@ -22,6 +22,7 @@ vi.mock('../services/url.service.js', async () => {
     deleteUrl: vi.fn(),
     deleteUrls: vi.fn(),
     getUrlPreview: vi.fn(),
+    updateUrl: vi.fn(),
   }
 })
 
@@ -39,6 +40,7 @@ import {
   deleteUrls,
   getUrlList,
   getUrlPreview,
+  updateUrl,
   UrlFetchError,
 } from '../services/url.service.js'
 import { parsePagination } from '../lib/pagination.js'
@@ -404,6 +406,65 @@ describe('DELETE /urls', () => {
   })
 })
 
+describe('PATCH /urls/:slug', () => {
+  it('returns 200 with the updated record', async () => {
+    vi.mocked(updateUrl).mockResolvedValue({ ...mockUrlRecord, title: 'New title' })
+
+    const res = await app.inject({
+      method: 'PATCH',
+      url: '/urls/abc12345',
+      payload: { title: 'New title' },
+    })
+
+    expect(res.statusCode).toBe(200)
+    expect(res.json().title).toBe('New title')
+    expect(updateUrl).toHaveBeenCalledWith('abc12345', { title: 'New title' })
+  })
+
+  it('passes an explicit null through as clearing the field', async () => {
+    vi.mocked(updateUrl).mockResolvedValue({ ...mockUrlRecord, description: null })
+
+    const res = await app.inject({
+      method: 'PATCH',
+      url: '/urls/abc12345',
+      payload: { description: null },
+    })
+
+    expect(res.statusCode).toBe(200)
+    expect(updateUrl).toHaveBeenCalledWith('abc12345', { description: null })
+  })
+
+  it('returns 400 for an empty body', async () => {
+    const res = await app.inject({ method: 'PATCH', url: '/urls/abc12345', payload: {} })
+
+    expect(res.statusCode).toBe(400)
+    expect(updateUrl).not.toHaveBeenCalled()
+  })
+
+  it('returns 400 for a title over the length limit', async () => {
+    const res = await app.inject({
+      method: 'PATCH',
+      url: '/urls/abc12345',
+      payload: { title: 'a'.repeat(201) },
+    })
+
+    expect(res.statusCode).toBe(400)
+  })
+
+  it('returns 404 when the URL does not exist', async () => {
+    vi.mocked(updateUrl).mockResolvedValue(null)
+
+    const res = await app.inject({
+      method: 'PATCH',
+      url: '/urls/notexist',
+      payload: { title: 'New title' },
+    })
+
+    expect(res.statusCode).toBe(404)
+    expect(res.json().error).toBe('URL not found')
+  })
+})
+
 describe('GET /preview/:slug', () => {
   it('returns 200 with preview', async () => {
     vi.mocked(getUrlPreview).mockResolvedValue(mockUrlRecord)
@@ -565,6 +626,32 @@ describe('API_KEY enforcement', () => {
         method: 'DELETE',
         url: '/urls',
         payload: { slugs: ['abc12345'] },
+        headers: { authorization: 'Bearer test-api-key' },
+      })
+
+      expect(res.statusCode).toBe(200)
+    })
+  })
+
+  describe('PATCH /urls/:slug', () => {
+    it('returns 401 when API_KEY is set and no Authorization header is provided', async () => {
+      const res = await app.inject({
+        method: 'PATCH',
+        url: '/urls/abc12345',
+        payload: { title: 'New title' },
+      })
+
+      expect(res.statusCode).toBe(401)
+      expect(res.json().error).toBe('Unauthorized')
+    })
+
+    it('returns 200 when API_KEY is set and correct Authorization header is provided', async () => {
+      vi.mocked(updateUrl).mockResolvedValue(mockUrlRecord)
+
+      const res = await app.inject({
+        method: 'PATCH',
+        url: '/urls/abc12345',
+        payload: { title: 'New title' },
         headers: { authorization: 'Bearer test-api-key' },
       })
 
