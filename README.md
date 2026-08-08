@@ -21,6 +21,7 @@ A self-hosted URL shortener that turns long, unwieldy links into clean and share
 - [API reference](#api-reference)
   - [POST /urls](#post-urls)
   - [POST /urls/bulk](#post-urlsbulk)
+  - [PATCH /urls/:slug](#patch-urlsslug)
   - [GET /:slug](#get-slug)
 - [Database schema](#database-schema)
 
@@ -269,6 +270,7 @@ An interactive API reference (powered by [Scalar](https://scalar.com)) is availa
 | `GET`    | `/urls`             | Yes           | List short URLs (paginated)        |
 | `GET`    | `/urls/:slug/stats` | Yes           | Click statistics for a slug        |
 | `GET`    | `/preview/:slug`    | Yes           | URL metadata without redirecting   |
+| `PATCH`  | `/urls/:slug`       | Yes           | Update title, description, expiry  |
 | `DELETE` | `/urls/:slug`       | Yes           | Delete a short URL                 |
 | `DELETE` | `/urls`             | Yes           | Bulk delete short URLs             |
 | `GET`    | `/:slug`            | No            | Redirect to original URL           |
@@ -306,6 +308,18 @@ An interactive API reference (powered by [Scalar](https://scalar.com)) is availa
 ```
 
 Accepts 1–50 entries, each shaped like the `POST /urls` body. Always returns `200` with a `results` array (one entry per input, in order) — check each entry's `success` field, since individual URLs can fail (e.g. a taken slug) while others in the same request succeed. A failed entry looks like `{ "success": false, "originalUrl": "...", "error": "..." }`. The whole request is rejected with `400` only if the body itself is invalid (empty array, more than 50 entries, or a malformed entry). Rate-limited separately from `POST /urls` via `RATE_LIMIT_BULK_CREATE_PER_MINUTE` (default: 3 req/min), since one request can do up to 50x the work.
+
+### PATCH /urls/:slug
+
+```json
+{
+  "title": "New title",
+  "description": null,
+  "expiresAt": "2027-01-01T00:00:00.000Z"
+}
+```
+
+All fields are optional — omit a field to leave it unchanged, or send it as `null` to clear it. At least one field must be provided. Returns `200` with the updated record, `400` for an empty or invalid body, or `404` if the slug doesn't exist.
 
 ### GET /:slug
 

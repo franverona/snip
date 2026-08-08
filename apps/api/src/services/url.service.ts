@@ -8,6 +8,7 @@ import type {
   CreateUrlInput,
   CreateUrlResponse,
   BulkCreateUrlResult,
+  UpdateUrlInput,
   UrlStats,
   ClickRecord,
   UrlRecord,
@@ -232,6 +233,16 @@ export async function findUrlBySlug(slug: string): Promise<Url | null> {
     where: eq(urls.slug, slug),
   })
   return url ?? null
+}
+
+export async function updateUrl(slug: string, input: UpdateUrlInput): Promise<UrlRecord | null> {
+  const values: Partial<Pick<Url, 'title' | 'description' | 'expiresAt'>> = {}
+  if ('title' in input) values.title = input.title ?? null
+  if ('description' in input) values.description = input.description ?? null
+  if ('expiresAt' in input) values.expiresAt = input.expiresAt ? new Date(input.expiresAt) : null
+
+  const [url] = await db.update(urls).set(values).where(eq(urls.slug, slug)).returning()
+  return url ? toUrlRecord(url) : null
 }
 
 export async function recordClick(
