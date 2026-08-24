@@ -76,7 +76,7 @@ importers:
         version: 16.6.1
       drizzle-orm:
         specifier: ^0.45.2
-        version: 0.45.2(@types/pg@8.21.0)(pg@8.23.0)
+        version: 0.45.2(@types/pg@8.23.1)(pg@8.23.0)
       fastify:
         specifier: ^5.12.0
         version: 5.12.0
@@ -106,8 +106,8 @@ importers:
         specifier: ^22.20.1
         version: 22.20.1
       '@types/pg':
-        specifier: ^8.21.0
-        version: 8.21.0
+        specifier: ^8.23.1
+        version: 8.23.1
       '@vitest/coverage-v8':
         specifier: 4.1.10
         version: 4.1.10(vitest@4.1.10)
@@ -1495,8 +1495,8 @@ packages:
   '@types/node@22.20.1':
     resolution: {integrity: sha512-EANqOCF9QFyra+4pfxUcX9STKJpCLjMbObVzljIJomAWSnuSIEAvyzEU53GaajbXJEgdh0iEcPL+DGvpUd4k1Q==}
 
-  '@types/pg@8.21.0':
-    resolution: {integrity: sha512-AYdtudzabjLZgVgRZmAnU8bAnVUXzuJX2IYHeSIiIHm68olD+LgQYCGWdtcNYnP0uq9c4S4NibVG3Ni7VbKW7Q==}
+  '@types/pg@8.23.1':
+    resolution: {integrity: sha512-fKVHpikPdg4GKks3JuLEhvwSyvwzF23hnabPy6DD8ljVbC7+6J5dQzdv4arV6jqq57djnMgs1HKBxX4P8aBI3A==}
 
   '@types/react-dom@19.2.4':
     resolution: {integrity: sha512-Bsc+QHgp+P/F02XDzNCY9jnZNCUuLki36KT7VKrTXXLdHf+vHMNZnW1rVu5DNW/rCK+fya3DATySbLM4yhtKUw==}
@@ -4778,7 +4778,7 @@ snapshots:
     dependencies:
       undici-types: 6.21.0
 
-  '@types/pg@8.21.0':
+  '@types/pg@8.23.1':
     dependencies:
       '@types/node': 22.20.1
       pg-protocol: 1.16.0
@@ -5318,9 +5318,9 @@ snapshots:
       esbuild: 0.25.12
       tsx: 4.23.12
 
-  drizzle-orm@0.45.2(@types/pg@8.21.0)(pg@8.23.0):
+  drizzle-orm@0.45.2(@types/pg@8.23.1)(pg@8.23.0):
     optionalDependencies:
-      '@types/pg': 8.21.0
+      '@types/pg': 8.23.1
       pg: 8.23.0
 
   dunder-proto@1.0.1:
