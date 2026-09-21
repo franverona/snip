@@ -17,7 +17,7 @@
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "styled-components": "^6.5.3",
-    "zod": "^4.6.2"
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@snip/tsconfig": "workspace:*",
