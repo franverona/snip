@@ -17,9 +17,9 @@
   },
   "dependencies": {
     "@fastify/cors": "^10.0.2",
-    "@fastify/helmet": "^13.1.1",
+    "@fastify/helmet": "^13.1.2",
     "@fastify/rate-limit": "^10.3.0",
-    "@fastify/swagger": "^9.9.1",
+    "@fastify/swagger": "^9.9.2",
     "@scalar/fastify-api-reference": "^1.72.4",
     "@snip/types": "workspace:*",
     "dotenv": "^16.4.7",
