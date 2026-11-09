@@ -66,8 +66,8 @@ importers:
         specifier: ^9.9.2
         version: 9.9.2(supports-color@7.2.0)
       '@scalar/fastify-api-reference':
-        specifier: ^1.76.3
-        version: 1.76.3
+        specifier: ^1.77.0
+        version: 1.77.0
       '@snip/types':
         specifier: workspace:*
         version: link:../../packages/types
@@ -1364,28 +1364,28 @@ packages:
   '@rolldown/pluginutils@1.0.1':
     resolution: {integrity: sha512-2j9bGt5Jh8hj+vPtgzPtl72j0yRxHAyumoo6TNfAjsLB04UtpSvPbPcDcBMxz7n+9CYB0c1GxQFxYRg2jimqGw==}
 
-  '@scalar/client-side-rendering@0.4.16':
-    resolution: {integrity: sha512-C6g3yGa6DwK++L0yxB6oebTc4fCdU/n/FrOK+08UdK4RK24bTvgcCcvjh8k6OVXDMyCodSf73ZERwVWYlnkaxA==}
+  '@scalar/client-side-rendering@0.4.17':
+    resolution: {integrity: sha512-RXoh55Dpizzgj/jIsgH6vqG22YySeuc5hIHQuu+5hgo6Etj6Rg51jljlhZCcOgLh34Yw3n6994wZh4HkXY8QOw==}
     engines: {node: '>=22'}
 
-  '@scalar/fastify-api-reference@1.76.3':
-    resolution: {integrity: sha512-TIqAr1voUI4JY8AvK0dwZuD6fSU72gSc3qM9ZH1Tfu51NIOjXIC09WO/zizl73Orrj5mzk0zEV8MQagOXkt2QA==}
+  '@scalar/fastify-api-reference@1.77.0':
+    resolution: {integrity: sha512-kjJbfwl8swk6ViDr8VAu8zgTpxfsYjRZWvoAtVs0fmDQAftpdtABIVAtXV+Gzc0HIasKTBjmWjIJNA9k2pBp6Q==}
     engines: {node: '>=22'}
 
-  '@scalar/helpers@0.16.4':
-    resolution: {integrity: sha512-9eILWzUcAkHEuYMMvijpSIy69t+Vkq+NudLB/7lgARFTWqXfQpIxW1L3VH7ogKyRie5+E4CNZ3PSvlw6IIfLGw==}
+  '@scalar/helpers@0.17.0':
+    resolution: {integrity: sha512-/XzBJDB/nr/Nzkx/a8ow0WdWb5LIb6KsWrjv7TsQYolkCxOM6ZT+iEJ635QssQG33wEzAK0os5Xbiub6RUU+Ng==}
     engines: {node: '>=22'}
 
-  '@scalar/json-magic@0.17.0':
-    resolution: {integrity: sha512-YmJAO9NoGCcU/vx7P4Dy9DGv+Vntp+ny3Fh99slHOOh/IZxvbdK5hWeZdzQ3x+ezab9XJNscFoX8H/P6W+H8lA==}
+  '@scalar/json-magic@0.18.0':
+    resolution: {integrity: sha512-mz/H7H9gP2jZvViQS2cyOmqrBvLQwN5UdJ+5k77yBxV25D/6jh0BfGubQyxNwAqA62TP8JnEiIQ4gzbsMZvESw==}
     engines: {node: '>=22.19.0'}
 
-  '@scalar/schemas@0.16.0':
-    resolution: {integrity: sha512-SHhRIH/9x86mRmJcyMgnMMWxDNzRtuyb93anz5zfWV2XuV7gZ1Br6E5Ll2Ygoc3HoKjOQkSdSVs11oKQxjvKMw==}
+  '@scalar/schemas@0.16.1':
+    resolution: {integrity: sha512-Dw/7ciVbUw17/z+MSXhn3LbA7czX8XSRJE9uQHHOg6SkVaGd7lMAkVPQfxp7lhraItqRNMDMrxNLWkx01qXkTA==}
     engines: {node: '>=22'}
 
-  '@scalar/types@0.26.0':
-    resolution: {integrity: sha512-T78Dj1Q+W0E1RsMyPoydfR+L+p9IUIkntBCRYlWaRibM98jAxABRYGQoU/qDHX0PR1IAFdE+d7ZqslypZbJzcg==}
+  '@scalar/types@0.27.0':
+    resolution: {integrity: sha512-OoU/6O7ooJyaRywL1DN4xoPgPYjCURohwN6iGQ9WNmexNBIS504BW3s9gmYdg8CyJ/gcuThaFbdx45ICuBsI2g==}
     engines: {node: '>=22'}
 
   '@scalar/validation@0.6.7':
@@ -1752,11 +1752,6 @@ packages:
     resolution: {integrity: sha512-BLrgEcRTwX2o6gGxGOCNyMvGSp35YofuYzw9h1IMTRmKqttAZZVU67bdb9Pr2vUHA8+j3i2tJfjO6C6+4myGTA==}
     engines: {node: 18 || 20 || >=22}
 
-  baseline-browser-mapping@2.11.29:
-    resolution: {integrity: sha512-YeesxhUmR4h5y5V8KF8iBCqJb8YFrBJ++XBTeGcWIaQOYXGN19JM0FoiOjAhwuDoln8owMgXcWBmgHtYSkky2w==}
-    engines: {node: '>=6.0.0'}
-    hasBin: true
-
   baseline-browser-mapping@2.11.34:
     resolution: {integrity: sha512-Aqr8mA1kIvyJ3UY5YAY7ib8LSo1DmDMbMnVqGPtsKW1LxaFQFwn9Eb3yvq2fUKJsRvaXjnAV7R5osqETapzNiA==}
     engines: {node: '>=6.0.0'}
@@ -1798,9 +1793,6 @@ packages:
   callsites@3.1.0:
     resolution: {integrity: sha512-P8BjAsXvZS+VIDUI11hHCQEv74YT67YUi5JJFNWIqL235sBmjX4+qx9Muvls5ivyNENctx46xQLQ3aTuE7ssaQ==}
     engines: {node: '>=6'}
-
-  caniuse-lite@1.0.30001816:
-    resolution: {integrity: sha512-+8Yx7BXCoqk6IF8yTicjfUR6D/ldJzdlsodlEOiOSPmhK844WIgk67/zIQaGAOxNkZyyvBlrRFnLvqKIoqbAFw==}
 
   caniuse-lite@1.0.30001820:
     resolution: {integrity: sha512-gfWD6MxqVCqAOwmODfZf7DchWvlrA+SRdNX7ceLfg3xRqe5ssjjpF7EgslC/0tiLiNTajdaNN/q8c/5u/7Gz8w==}
@@ -4697,39 +4689,39 @@ snapshots:
 
   '@rolldown/pluginutils@1.0.1': {}
 
-  '@scalar/client-side-rendering@0.4.16':
+  '@scalar/client-side-rendering@0.4.17':
     dependencies:
-      '@scalar/helpers': 0.16.4
-      '@scalar/schemas': 0.16.0
-      '@scalar/types': 0.26.0
+      '@scalar/helpers': 0.17.0
+      '@scalar/schemas': 0.16.1
+      '@scalar/types': 0.27.0
       '@scalar/validation': 0.6.7
 
-  '@scalar/fastify-api-reference@1.76.3':
+  '@scalar/fastify-api-reference@1.77.0':
     dependencies:
-      '@scalar/client-side-rendering': 0.4.16
-      '@scalar/json-magic': 0.17.0
+      '@scalar/client-side-rendering': 0.4.17
+      '@scalar/json-magic': 0.18.0
       fastify-plugin: 6.0.1
       github-slugger: 2.0.0
       yaml: 2.9.1
 
-  '@scalar/helpers@0.16.4': {}
+  '@scalar/helpers@0.17.0': {}
 
-  '@scalar/json-magic@0.17.0':
+  '@scalar/json-magic@0.18.0':
     dependencies:
-      '@scalar/helpers': 0.16.4
+      '@scalar/helpers': 0.17.0
       pathe: 2.0.3
       undici: 8.12.3
       yaml: 2.9.1
 
-  '@scalar/schemas@0.16.0':
+  '@scalar/schemas@0.16.1':
     dependencies:
-      '@scalar/helpers': 0.16.4
-      '@scalar/types': 0.26.0
+      '@scalar/helpers': 0.17.0
+      '@scalar/types': 0.27.0
       '@scalar/validation': 0.6.7
 
-  '@scalar/types@0.26.0':
+  '@scalar/types@0.27.0':
     dependencies:
-      '@scalar/helpers': 0.16.4
+      '@scalar/helpers': 0.17.0
       nanoid: 5.1.16
       type-fest: 5.10.0
       zod: 4.6.7
@@ -5166,8 +5158,6 @@ snapshots:
 
   balanced-match@4.0.4: {}
 
-  baseline-browser-mapping@2.11.29: {}
-
   baseline-browser-mapping@2.11.34: {}
 
   boolbase@1.0.0: {}
@@ -5183,8 +5173,8 @@ snapshots:
 
   browserslist@4.28.7:
     dependencies:
-      baseline-browser-mapping: 2.11.29
-      caniuse-lite: 1.0.30001816
+      baseline-browser-mapping: 2.11.34
+      caniuse-lite: 1.0.30001820
       electron-to-chromium: 1.5.399
       node-releases: 2.0.51
       update-browserslist-db: 1.2.3(browserslist@4.28.7)
@@ -5217,8 +5207,6 @@ snapshots:
       get-intrinsic: 1.3.0
 
   callsites@3.1.0: {}
-
-  caniuse-lite@1.0.30001816: {}
 
   caniuse-lite@1.0.30001820: {}
 
